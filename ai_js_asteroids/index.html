@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Asteroids - Restart Button & Sounds</title>
+  <style>
+    html, body {
+      margin: 0; 
+      padding: 0; 
+      overflow: hidden;
+      background: #000; 
+    }
+    canvas {
+      display: block;
+      background: #000; 
+      margin: 0 auto;
+      border: 1px solid #444;
+    }
+    #info {
+      text-align: center;
+      color: white;
+      margin-top: -4px;
+      font-family: monospace;
+    }
+    /* Initially hide the restart button */
+    #restartButton {
+      display: none;
+      margin: 10px auto;
+      font-family: monospace;
+      font-size: 16px;
+      padding: 6px 12px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="gameCanvas" width="800" height="600"></canvas>
+
+<div id="info">
+  <p>Left/Right Arrow = rotate<br/>
+     Up Arrow = thrust<br/>
+     Space = fire bullet (once per press)</p>
+  <!-- This button is hidden by default; it appears only on Game Over. -->
+  <button id="restartButton">Restart Game</button>
+</div>
+
+<script>
+/***************************************************************
+ * Global Constants & Canvas
+ ***************************************************************/
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const WIDTH = canvas.width;
+const HEIGHT = canvas.height;
+
+/***************************************************************
+ * Game State Variables
+ ***************************************************************/
+let score = 0;
+let lives = 3;
+let gameOver = false;
+
+// Multiple bullets in an array
+let bullets = [];
+
+// Asteroids array
+let asteroids = [];
+
+// Track current wave/level
+let wave = 1;
+
+// Invincibility timer (in frames)
+let invincibleTimer = 0;  // e.g., 60 = 1 second at ~60 FPS
+
+// This variable tracks whether space was pressed in the *previous* frame.
+// Helps ensure only one bullet spawns per press.
+let spacePreviouslyPressed = false;
+
+/***************************************************************
+ * Audio Setup
+ ***************************************************************/
+/* Replace these placeholder paths with valid audio URLs or file paths. */
+const shootSound     = new Audio("Laser_09.mp3");     // e.g., "sounds/shoot.mp3"
+const thrustSound    = new Audio("thrust.mp3");    // e.g., "sounds/thrust.mp3"
+const explosionSound = new Audio("low_explosion.mp3"); // e.g., "sounds/explosion.mp3"
+
+// Adjust volume or loop settings if desired
+shootSound.volume     = 0.5;
+thrustSound.volume    = 0.3;
+explosionSound.volume = 0.4;
+// thrustSound.loop      = true; // If you want the thrust sound to loop while holding Up
+
+/***************************************************************
+ * Input Handling
+ ***************************************************************/
+let leftPressed = false;
+let rightPressed = false;
+let thrustPressed = false;
+let spacePressed = false;
+
+window.addEventListener('keydown', (e) => {
+  switch(e.code) {
+    case "ArrowLeft":  leftPressed = true;  break;
+    case "ArrowRight": rightPressed = true; break;
+    case "ArrowUp":    thrustPressed = true;break;
+    case "Space":      spacePressed = true; break;
+  }
+});
+window.addEventListener('keyup', (e) => {
+  switch(e.code) {
+    case "ArrowLeft":  leftPressed = false;  break;
+    case "ArrowRight": rightPressed = false; break;
+    case "ArrowUp":    thrustPressed = false;break;
+    case "Space":      spacePressed = false; break;
+  }
+});
+
+/***************************************************************
+ * DOM Elements (for the Restart button)
+ ***************************************************************/
+const restartButton = document.getElementById("restartButton");
+restartButton.addEventListener("click", () => {
+  restartGame();
+});
+
+/***************************************************************
+ * Ship Class
+ ***************************************************************/
+class Ship {
+  constructor() {
+    this.x = WIDTH / 2;
+    this.y = HEIGHT / 2;
+    this.radius = 15;
+    this.angle = 0;           // 0 means facing right
+    this.rotationSpeed = 0.07;
+    this.thrust = 0.15;
+    this.vx = 0;
+    this.vy = 0;
+    this.friction = 0.99;
+  }
+
+  rotateLeft() {
+    this.angle -= this.rotationSpeed;
+  }
+  rotateRight() {
+    this.angle += this.rotationSpeed;
+  }
+
+  applyThrust() {
+    this.vx += Math.cos(this.angle) * this.thrust;
+    this.vy += Math.sin(this.angle) * this.thrust;
+
+    // Play thrust sound if desired:
+    // thrustSound.currentTime = 0; // reset so it can replay
+    // thrustSound.play();
+  }
+
+  update() {
+    this.x += this.vx;
+    this.y += this.vy;
+
+    // Apply friction
+    this.vx *= this.friction;
+    this.vy *= this.friction;
+
+    // Screen-wrapping
+    if (this.x < 0) this.x += WIDTH;
+    if (this.x > WIDTH) this.x -= WIDTH;
+    if (this.y < 0) this.y += HEIGHT;
+    if (this.y > HEIGHT) this.y -= HEIGHT;
+  }
+
+  draw(ctx) {
+    // Blink if invincible
+    if (invincibleTimer > 0 && Math.floor(invincibleTimer / 5) % 2 === 0) {
+      return; // skip drawing half the time for a blinking effect
+    }
+    ctx.save();
+    ctx.translate(this.x, this.y);
+    ctx.rotate(this.angle);
+    
+    // A simple triangle
+    ctx.beginPath();
+    ctx.moveTo(20, 0);
+    ctx.lineTo(-10, 10);
+    ctx.lineTo(-10, -10);
+    ctx.closePath();
+    
+    ctx.strokeStyle = 'white';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.restore();
+  }
+}
+
+/***************************************************************
+ * Asteroid Class
+ ***************************************************************/
+class Asteroid {
+  constructor(x, y, radius=40) {
+    this.x = x;
+    this.y = y;
+    this.radius = radius;
+    this.vx = (Math.random() * 2 - 1);
+    this.vy = (Math.random() * 2 - 1);
+  }
+
+  update() {
+    this.x += this.vx;
+    this.y += this.vy;
+
+    // Screen-wrapping
+    if (this.x < 0) this.x += WIDTH;
+    if (this.x > WIDTH) this.x -= WIDTH;
+    if (this.y < 0) this.y += HEIGHT;
+    if (this.y > HEIGHT) this.y -= HEIGHT;
+  }
+
+  draw(ctx) {
+    ctx.save();
+    ctx.translate(this.x, this.y);
+    ctx.beginPath();
+    ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
+    ctx.strokeStyle = 'white';
+    ctx.stroke();
+    ctx.restore();
+  }
+}
+
+/***************************************************************
+ * Bullet Class
+ ***************************************************************/
+class Bullet {
+  constructor(x, y, angle) {
+    this.x = x;
+    this.y = y;
+    this.angle = angle;
+    this.speed = 5;
+    this.active = true;
+    this.radius = 2;
+    // Optionally set a lifetime so bullets eventually disappear
+    this.life = 120; // ~2 seconds if ~60 FPS
+
+    this.vx = Math.cos(this.angle) * this.speed;
+    this.vy = Math.sin(this.angle) * this.speed;
+  }
+
+  update() {
+    if (!this.active) return;
+
+    this.x += this.vx;
+    this.y += this.vy;
+    // Wrap around
+    if (this.x < 0) this.x += WIDTH;
+    if (this.x > WIDTH) this.x -= WIDTH;
+    if (this.y < 0) this.y += HEIGHT;
+    if (this.y > HEIGHT) this.y -= HEIGHT;
+
+    // Decrement life, and deactivate if it hits 0
+    this.life--;
+    if (this.life <= 0) {
+      this.active = false;
+    }
+  }
+
+  draw(ctx) {
+    if (!this.active) return;
+    ctx.save();
+    ctx.translate(this.x, this.y);
+    ctx.beginPath();
+    ctx.arc(0, 0, this.radius, 0, Math.PI*2);
+    ctx.fillStyle = 'white';
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+/***************************************************************
+ * Instantiate the Ship
+ ***************************************************************/
+const ship = new Ship();
+
+/***************************************************************
+ * Utility: Collision (circle vs circle)
+ ***************************************************************/
+function checkCollision(objA, objB) {
+  const dx = objA.x - objB.x;
+  const dy = objA.y - objB.y;
+  const dist = Math.sqrt(dx*dx + dy*dy);
+  return dist < (objA.radius + objB.radius);
+}
+
+/***************************************************************
+ * Asteroid Waves
+ ***************************************************************/
+ function createAsteroidsForWave(num) {
+  const deadZoneRadius = 100;  // for example
+  for (let i = 0; i < num; i++) {
+    let x, y, dist;
+    do {
+      x = Math.random() * WIDTH;
+      y = Math.random() * HEIGHT;
+      const dx = x - ship.x;
+      const dy = y - ship.y;
+      dist = Math.sqrt(dx * dx + dy * dy);
+    } while (dist < deadZoneRadius);
+    asteroids.push(new Asteroid(x, y, 40));
+  }
+}
+
+
+function startNewWave() {
+  // Increase wave number, then create that many asteroids (or more).
+  wave++;
+  createAsteroidsForWave(3 + wave);
+}
+
+/***************************************************************
+ * Initialize Game: Start wave = 1
+ ***************************************************************/
+function initGame() {
+  wave = 1;
+  score = 0;
+  lives = 3;
+  gameOver = false;
+  asteroids = [];
+  bullets = [];
+  createAsteroidsForWave(3 + wave); // wave=1 -> 4 asteroids
+  hideRestartButton(); // Make sure the restart button is hidden
+}
+
+/***************************************************************
+ * Reset Ship after losing a life (with invincibility)
+ ***************************************************************/
+function resetShip() {
+  ship.x = WIDTH / 2;
+  ship.y = HEIGHT / 2;
+  ship.vx = 0;
+  ship.vy = 0;
+  ship.angle = 0;
+  // Give a short period of invincibility
+  invincibleTimer = 120; // about 2 seconds
+}
+
+/***************************************************************
+ * Restart Game (called by the button)
+ ***************************************************************/
+function restartGame() {
+  initGame();
+}
+
+/***************************************************************
+ * Show/Hide the Restart Button
+ ***************************************************************/
+function showRestartButton() {
+  restartButton.style.display = "inline-block";
+}
+function hideRestartButton() {
+  restartButton.style.display = "none";
+}
+
+/***************************************************************
+ * Main Update Loop
+ ***************************************************************/
+function update() {
+  if (gameOver) return;
+
+  // Decrement invincibility timer
+  if (invincibleTimer > 0) {
+    invincibleTimer--;
+  }
+
+  // -- SHIP MOVEMENT --
+  if (leftPressed) {
+    ship.rotateLeft();
+  }
+  if (rightPressed) {
+    ship.rotateRight();
+  }
+  if (thrustPressed) {
+    ship.applyThrust();
+  }
+  ship.update();
+
+  // -- BULLET CREATION (one bullet per press) --
+  if (!spacePreviouslyPressed && spacePressed) {
+    // Play shoot sound (reset currentTime so it replays from start)
+    shootSound.currentTime = 0;
+    shootSound.play();
+
+    bullets.push(new Bullet(ship.x, ship.y, ship.angle));
+  }
+  // Remember this frame's state
+  spacePreviouslyPressed = spacePressed;
+
+  // -- BULLET UPDATES --
+  bullets.forEach(bullet => bullet.update());
+  bullets = bullets.filter(b => b.active);
+
+  // -- ASTEROID UPDATES --
+  asteroids.forEach(asteroid => asteroid.update());
+
+  // If all asteroids are destroyed, start a new wave
+  if (asteroids.length === 0) {
+    startNewWave();
+  }
+
+  // -- BULLET/ASTEROID COLLISIONS --
+  bullets.forEach(bullet => {
+    if (!bullet.active) return;
+    for (let i = 0; i < asteroids.length; i++) {
+      let asteroid = asteroids[i];
+      if (checkCollision(bullet, asteroid)) {
+        bullet.active = false;
+        score += 20;
+
+        // Optionally, play an explosion sound
+        explosionSound.currentTime = 0;
+        explosionSound.play();
+
+        // If asteroid is large, split
+        if (asteroid.radius > 20) {
+          let newRadius = asteroid.radius / 2;
+          asteroids.push(new Asteroid(asteroid.x, asteroid.y, newRadius));
+          asteroids.push(new Asteroid(asteroid.x, asteroid.y, newRadius));
+        }
+        asteroids.splice(i, 1);
+        break; // handle one collision per bullet
+      }
+    }
+  });
+
+  // -- SHIP/ASTEROID COLLISIONS (only if not invincible) --
+  if (invincibleTimer <= 0) {
+    for (let i = 0; i < asteroids.length; i++) {
+      if (checkCollision(ship, asteroids[i])) {
+        // Ship destroyed
+        lives--;
+        // explosionSound.play(); if you want an explosion on ship destruction
+
+        if (lives > 0) {
+          resetShip();
+        } else {
+          gameOver = true;
+          showRestartButton(); // Show the restart button when game ends
+        }
+        break; 
+      }
+    }
+  }
+}
+
+/***************************************************************
+ * Main Draw Loop
+ ***************************************************************/
+function draw() {
+  ctx.clearRect(0, 0, WIDTH, HEIGHT);
+
+  // Draw Ship if not game over
+  if (!gameOver) {
+    ship.draw(ctx);
+  }
+
+  // Draw asteroids
+  asteroids.forEach(a => a.draw(ctx));
+
+  // Draw bullets
+  bullets.forEach(b => b.draw(ctx));
+
+  // HUD: Score & Lives
+  ctx.fillStyle = 'white';
+  ctx.font = '20px monospace';
+  ctx.fillText(`Score: ${score}`, 20, 30);
+  ctx.fillText(`Lives: ${lives}`, 20, 60);
+  ctx.fillText(`Wave: ${wave}`, 20, 90);
+
+  // If Game Over
+  if (gameOver) {
+    ctx.save();
+    ctx.fillStyle = 'red';
+    ctx.font = '40px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText("GAME OVER", WIDTH / 2, HEIGHT / 2 - 20);
+    ctx.restore();
+  }
+}
+
+/***************************************************************
+ * Main Game Loop
+ ***************************************************************/
+function gameLoop() {
+  update();
+  draw();
+  requestAnimationFrame(gameLoop);
+}
+
+/***************************************************************
+ * Start Everything
+ ***************************************************************/
+initGame();
+gameLoop();
+</script>
+
+</body>
+</html>
