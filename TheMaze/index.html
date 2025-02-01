@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Labyrinth of Secrets</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #222;
+      color: #eee;
+      font-family: sans-serif;
+      text-align: center;
+    }
+    #gameContainer {
+      display: inline-block;
+      margin-top: 20px;
+    }
+    #gameCanvas {
+      background-color: #333;
+      border: 2px solid #eee;
+      display: block;
+      margin: 0 auto;
+    }
+    #statusBox, #messageBox {
+      width: 480px;
+      margin: 10px auto;
+      padding: 8px;
+      border: 1px solid #eee;
+      background-color: #444;
+    }
+  </style>
+</head>
+<body>
+  <h1>Labyrinth of Secrets</h1>
+  <div id="gameContainer">
+    <canvas id="gameCanvas" width="480" height="480"></canvas>
+    <div id="statusBox">Secrets found: 0/3</div>
+    <div id="messageBox">Welcome, Explorer. You awaken in a mysterious labyrinth. Use the arrow keys to begin your journey.</div>
+  </div>
+
+  <script>
+    // --- Game Configuration ---
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    const cellSize = 32;
+    const gridWidth = 15;
+    const gridHeight = 15;
+    let gameOver = false;
+
+    // --- Map Design --- 
+    // Using a simple design where:
+    // '#' => Wall (1)
+    // '.' => Floor (0)
+    // 'S' => Secret (2)
+    // 'E' => Exit (3)
+    const mapDesign = [
+      "###############",
+      "#...........S.#",
+      "#.#####.#####.#",
+      "#.#...#...#...#",
+      "#.#.#.#.#.#.###",
+      "#...#...#.....#",
+      "###.#####.###.#",
+      "#.....S...#.#.#",
+      "#.###.###.#.#.#",
+      "#.#...#...#.#.#",
+      "#.#.###.###.#.#",
+      "#...#.....#...#",
+      "###.#.#####.###",
+      "#S..#.......E.#",
+      "###############"
+    ];
+
+    // Convert the string map into a 2D array of numeric codes.
+    // 0: Floor, 1: Wall, 2: Secret, 3: Exit
+    let gameMap = [];
+    for (let y = 0; y < gridHeight; y++) {
+      let row = [];
+      for (let x = 0; x < gridWidth; x++) {
+        const ch = mapDesign[y][x];
+        if (ch === "#") {
+          row.push(1);
+        } else if (ch === ".") {
+          row.push(0);
+        } else if (ch === "S") {
+          row.push(2);
+        } else if (ch === "E") {
+          row.push(3);
+        } else {
+          row.push(0);
+        }
+      }
+      gameMap.push(row);
+    }
+
+    // --- Secret Clues (for the Explorer) ---
+    // Each secret is keyed by its coordinate "x,y" and includes a message.
+    // (Coordinates are 0-indexed: x = column, y = row.)
+    const secrets = {
+      "13,1": { message: "You discover an ancient inscription hinting at a hidden door.", collected: false },
+      "6,7":  { message: "You find a mysterious key lying on the ground.", collected: false },
+      "1,13": { message: "A weathered map fragment reveals a secret passage.", collected: false }
+    };
+
+    // --- Player Initialization ---
+    const player = { x: 1, y: 1 }; // Starting at a safe floor cell
+
+    // --- Drawing Function ---
+    function draw() {
+      // Clear canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Draw the map grid
+      for (let y = 0; y < gridHeight; y++) {
+        for (let x = 0; x < gridWidth; x++) {
+          let tile = gameMap[y][x];
+          let color;
+          switch(tile) {
+            case 1: // Wall
+              color = "#555";
+              break;
+            case 0: // Floor
+              color = "#ccc";
+              break;
+            case 2: // Secret (uncollected)
+              color = "#cc0";  // Golden hint for the curious
+              break;
+            case 3: // Exit
+              color = "#0c0";  // A welcoming green
+              break;
+            default:
+              color = "#ccc";
+          }
+          ctx.fillStyle = color;
+          ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+          // Optional: draw grid lines for clarity
+          ctx.strokeStyle = "#222";
+          ctx.strokeRect(x * cellSize, y * cellSize, cellSize, cellSize);
+        }
+      }
+
+      // Draw the player as a red circle
+      ctx.beginPath();
+      ctx.arc(player.x * cellSize + cellSize / 2, player.y * cellSize + cellSize / 2, cellSize / 3, 0, Math.PI * 2);
+      ctx.fillStyle = "red";
+      ctx.fill();
+    }
+
+    // --- Message and Status Updates ---
+    function updateMessage(msg) {
+      document.getElementById("messageBox").textContent = msg;
+    }
+
+    function updateStatus() {
+      let count = 0;
+      for (let key in secrets) {
+        if (secrets[key].collected) count++;
+      }
+      document.getElementById("statusBox").textContent = "Secrets found: " + count + "/3";
+    }
+
+    // Check if all secrets have been collected
+    function allSecretsCollected() {
+      for (let key in secrets) {
+        if (!secrets[key].collected) return false;
+      }
+      return true;
+    }
+
+    // --- Player Movement Handler ---
+    document.addEventListener("keydown", function(e) {
+      if (gameOver) return;
+      
+      let newX = player.x;
+      let newY = player.y;
+
+      // Process arrow key input
+      switch(e.key) {
+        case "ArrowUp":    newY--; break;
+        case "ArrowDown":  newY++; break;
+        case "ArrowLeft":  newX--; break;
+        case "ArrowRight": newX++; break;
+        default: return; // Ignore other keys
+      }
+      // Prevent page scrolling with arrow keys
+      e.preventDefault();
+
+      // Check boundaries
+      if (newX < 0 || newX >= gridWidth || newY < 0 || newY >= gridHeight) return;
+
+      // Check for wall collision
+      if (gameMap[newY][newX] === 1) {
+        updateMessage("A solid wall blocks your path.");
+        return;
+      }
+
+      // Update player position
+      player.x = newX;
+      player.y = newY;
+
+      // --- Check for secret discovery ---
+      if (gameMap[newY][newX] === 2) {
+        const key = newX + "," + newY;
+        if (secrets[key] && !secrets[key].collected) {
+          secrets[key].collected = true;
+          updateMessage(secrets[key].message);
+          updateStatus();
+          // Remove the secret from the map (turn it into a normal floor)
+          gameMap[newY][newX] = 0;
+        }
+      }
+
+      // --- Check for exit ---
+      if (gameMap[newY][newX] === 3) {
+        if (allSecretsCollected()) {
+          updateMessage("Congratulations! You have uncovered all the secrets and found your escape.");
+          gameOver = true;
+        } else {
+          updateMessage("The exit is locked. You sense that undiscovered secrets remain.");
+        }
+      }
+
+      draw();
+    });
+
+    // Initial drawing
+    draw();
+  </script>
+</body>
+</html>
