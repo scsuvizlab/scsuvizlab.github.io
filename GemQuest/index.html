@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Gem Quest: The Treasure of Time</title>
+  <style>
+    /* Basic styling for a dark, retro arcade feel */
+    body {
+      background: #222;
+      color: #eee;
+      text-align: center;
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    h1 {
+      margin-top: 20px;
+    }
+    #gameCanvas {
+      background: #333;
+      border: 2px solid #eee;
+      margin-top: 20px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    #ui {
+      margin-top: 10px;
+      font-size: 18px;
+    }
+    .achievement {
+      color: gold;
+      margin: 5px;
+      font-weight: bold;
+    }
+    /* Overlay that appears when the game ends */
+    #gameOverOverlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      color: #fff;
+      font-size: 24px;
+      z-index: 10;
+    }
+    #restartBtn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 18px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Gem Quest: The Treasure of Time</h1>
+  <canvas id="gameCanvas" width="600" height="400"></canvas>
+  <div id="ui">
+    Score: <span id="score">0</span> | Level: <span id="level">1</span>
+    <div id="achievements"></div>
+  </div>
+  <div id="gameOverOverlay">
+    <div id="gameOverText">Game Over!</div>
+    <button id="restartBtn">Restart</button>
+  </div>
+  
+  <script>
+    /***** Game Setup *****/
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    let score = 0;
+    let level = 1;
+    let achievementsUnlocked = [];
+    const achievementThresholds = [
+      { score: 5, message: "Gem Novice!" },
+      { score: 10, message: "Gem Collector!" },
+      { score: 20, message: "Treasure Seeker!" },
+      { score: 50, message: "Gem Master!" }
+    ];
+
+    // The player is represented by a circle
+    let player = {
+      x: canvas.width / 2,
+      y: canvas.height / 2,
+      radius: 15,
+      speed: 2
+    };
+
+    // The gem is the collectible item
+    let gem = {
+      x: 0,
+      y: 0,
+      radius: 10
+    };
+
+    // Place the gem at a random free location
+    function spawnGem() {
+      let valid = false;
+      while (!valid) {
+        gem.x = Math.random() * (canvas.width - 2 * gem.radius) + gem.radius;
+        gem.y = Math.random() * (canvas.height - 2 * gem.radius) + gem.radius;
+        // Ensure gem does not spawn inside an obstacle
+        valid = true;
+        for (let obstacle of obstacles) {
+          if (circleRectCollision(gem, obstacle)) {
+            valid = false;
+            break;
+          }
+        }
+      }
+    }
+    spawnGem();
+
+    // Array of obstacles that appear as you level up
+    let obstacles = [];
+    function spawnObstacle() {
+      const size = 50;
+      let obstacle = { x: 0, y: 0, width: size, height: size };
+      let safe = false;
+      // Ensure the new obstacle is not too close to the player
+      while (!safe) {
+        obstacle.x = Math.random() * (canvas.width - size);
+        obstacle.y = Math.random() * (canvas.height - size);
+        const dx = obstacle.x + size / 2 - player.x;
+        const dy = obstacle.y + size / 2 - player.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        if (distance > 100) { 
+          safe = true; 
+        }
+      }
+      obstacles.push(obstacle);
+    }
+
+    /***** Input Handling *****/
+    let keys = { left: false, right: false, up: false, down: false };
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowLeft" || e.key === "a") { keys.left = true; }
+      if (e.key === "ArrowRight" || e.key === "d") { keys.right = true; }
+      if (e.key === "ArrowUp" || e.key === "w") { keys.up = true; }
+      if (e.key === "ArrowDown" || e.key === "s") { keys.down = true; }
+    });
+    document.addEventListener("keyup", (e) => {
+      if (e.key === "ArrowLeft" || e.key === "a") { keys.left = false; }
+      if (e.key === "ArrowRight" || e.key === "d") { keys.right = false; }
+      if (e.key === "ArrowUp" || e.key === "w") { keys.up = false; }
+      if (e.key === "ArrowDown" || e.key === "s") { keys.down = false; }
+    });
+
+    /***** Game Update & Collision *****/
+    function update() {
+      // Move player based on input
+      if (keys.left) { player.x -= player.speed; }
+      if (keys.right) { player.x += player.speed; }
+      if (keys.up) { player.y -= player.speed; }
+      if (keys.down) { player.y += player.speed; }
+
+      // Prevent player from leaving the canvas
+      if (player.x - player.radius < 0) player.x = player.radius;
+      if (player.x + player.radius > canvas.width) player.x = canvas.width - player.radius;
+      if (player.y - player.radius < 0) player.y = player.radius;
+      if (player.y + player.radius > canvas.height) player.y = canvas.height - player.radius;
+
+      // Check collision with the gem
+      let dx = player.x - gem.x;
+      let dy = player.y - gem.y;
+      let dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < player.radius + gem.radius) {
+        score++;
+        document.getElementById("score").textContent = score;
+        // Unlock any new achievements
+        achievementThresholds.forEach(threshold => {
+          if (score >= threshold.score && !achievementsUnlocked.includes(threshold.message)) {
+            achievementsUnlocked.push(threshold.message);
+            let achDiv = document.getElementById("achievements");
+            let newAch = document.createElement("div");
+            newAch.className = "achievement";
+            newAch.textContent = threshold.message;
+            achDiv.appendChild(newAch);
+          }
+        });
+        // Increase level every 5 gems
+        let newLevel = Math.floor(score / 5) + 1;
+        if (newLevel > level) {
+          level = newLevel;
+          document.getElementById("level").textContent = level;
+          // Increase player speed slightly each level
+          player.speed += 0.5;
+          // Spawn a new obstacle to raise the challenge
+          spawnObstacle();
+        }
+        spawnGem();
+      }
+
+      // Check collision with obstacles (using circle–to–rectangle collision)
+      for (let obstacle of obstacles) {
+        if (circleRectCollision(player, obstacle)) {
+          gameOver();
+          return;
+        }
+      }
+    }
+
+    // Helper: detect collision between a circle and a rectangle
+    function circleRectCollision(circle, rect) {
+      // Find the closest point within the rectangle to the circle
+      let closestX = clamp(circle.x, rect.x, rect.x + rect.width);
+      let closestY = clamp(circle.y, rect.y, rect.y + rect.height);
+      // Calculate the distance from the circle's center to this point
+      let dx = circle.x - closestX;
+      let dy = circle.y - closestY;
+      return (dx * dx + dy * dy) < (circle.radius * circle.radius);
+    }
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    /***** Game Loop & Drawing *****/
+    let gameRunning = true;
+    function gameOver() {
+      gameRunning = false;
+      document.getElementById("gameOverOverlay").style.display = "flex";
+    }
+
+    document.getElementById("restartBtn").addEventListener("click", restartGame);
+    function restartGame() {
+      // Reset game state
+      score = 0;
+      level = 1;
+      achievementsUnlocked = [];
+      document.getElementById("score").textContent = score;
+      document.getElementById("level").textContent = level;
+      document.getElementById("achievements").innerHTML = "";
+      player.x = canvas.width / 2;
+      player.y = canvas.height / 2;
+      player.speed = 2;
+      spawnGem();
+      obstacles = [];
+      gameRunning = true;
+      document.getElementById("gameOverOverlay").style.display = "none";
+      requestAnimationFrame(gameLoop);
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw the gem
+      ctx.fillStyle = "cyan";
+      ctx.beginPath();
+      ctx.arc(gem.x, gem.y, gem.radius, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Draw the player
+      ctx.fillStyle = "lime";
+      ctx.beginPath();
+      ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Draw the obstacles
+      ctx.fillStyle = "red";
+      obstacles.forEach(obstacle => {
+        ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+      });
+    }
+
+    function gameLoop() {
+      if (!gameRunning) return;
+      update();
+      draw();
+      requestAnimationFrame(gameLoop);
+    }
+
+    requestAnimationFrame(gameLoop);
+  </script>
+</body>
+</html>
