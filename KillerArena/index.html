@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Killer Arena</title>
+  <style>
+    /* Basic reset and full-window background */
+    body {
+      margin: 0;
+      overflow: hidden;
+      background-color: #111;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      user-select: none;
+    }
+    /* Center the canvas and give it a subtle border */
+    canvas {
+      display: block;
+      margin: 0 auto;
+      background-color: #222;
+      border: 2px solid #444;
+    }
+    /* Scoreboard at the top center */
+    #scoreBoard {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 24px;
+      z-index: 10;
+    }
+    /* Game Over overlay */
+    #gameOver {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 36px;
+      text-align: center;
+      display: none;
+      z-index: 20;
+    }
+    #restartBtn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 18px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <!-- Score display -->
+  <div id="scoreBoard">Score: 0</div>
+  <!-- Game Over screen with restart button -->
+  <div id="gameOver">
+    <div>Game Over</div>
+    <button id="restartBtn">Restart</button>
+  </div>
+  <!-- Game canvas -->
+  <canvas id="gameCanvas" width="800" height="600"></canvas>
+  
+  <script>
+  /***********************************************************************
+   * Killer Arena
+   *
+   * A fast-paced top-down shooter built entirely in HTML5 and JavaScript.
+   * You control a sharp-shooting ship that must eliminate enemies that
+   * relentlessly pursue you. This design emphasizes direct competition and
+   * “killing” enemies—the very essence of what appeals to Killer-type players.
+   ***********************************************************************/
+  
+  // Get references to canvas and UI elements
+  const canvas = document.getElementById("gameCanvas");
+  const ctx = canvas.getContext("2d");
+  const scoreBoard = document.getElementById("scoreBoard");
+  const gameOverDiv = document.getElementById("gameOver");
+  const restartBtn = document.getElementById("restartBtn");
+
+  // Global game variables
+  let player;
+  let enemies = [];
+  let bullets = [];
+  let particles = [];
+  let keys = {};
+  let mouseX = canvas.width / 2;
+  let mouseY = canvas.height / 2;
+  let isShooting = false;
+  const shootCooldown = 150; // milliseconds between shots
+  let shootTimer = 0;
+  let lastEnemySpawnTime = 0;
+  let spawnInterval = 1500; // spawn enemy every 1.5 seconds (ms)
+  let score = 0;
+  let gameOver = false;
+  let lastTime = 0; // timestamp from the animation frame
+  
+  // ---------------------------
+  // Helper Functions
+  // ---------------------------
+  
+  // Calculate squared distance between two points
+  function distSq(x1, y1, x2, y2) {
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    return dx * dx + dy * dy;
+  }
+  
+  // ---------------------------
+  // Classes
+  // ---------------------------
+  
+  // Player class – represented as a triangle that points toward the mouse
+  class Player {
+    constructor(x, y) {
+      this.x = x;
+      this.y = y;
+      this.radius = 20;
+      this.speed = 300; // pixels per second
+      this.angle = 0;
+    }
+    update(dt) {
+      let dx = 0, dy = 0;
+      if (keys["w"] || keys["ArrowUp"])    dy -= 1;
+      if (keys["s"] || keys["ArrowDown"])  dy += 1;
+      if (keys["a"] || keys["ArrowLeft"])  dx -= 1;
+      if (keys["d"] || keys["ArrowRight"]) dx += 1;
+      // Normalize movement vector to avoid faster diagonal movement
+      if (dx !== 0 || dy !== 0) {
+        const len = Math.sqrt(dx * dx + dy * dy);
+        dx /= len;
+        dy /= len;
+        this.x += dx * this.speed * dt;
+        this.y += dy * this.speed * dt;
+      }
+      // Constrain within canvas boundaries
+      this.x = Math.max(this.radius, Math.min(canvas.width - this.radius, this.x));
+      this.y = Math.max(this.radius, Math.min(canvas.height - this.radius, this.y));
+  
+      // Update angle to point toward current mouse position
+      this.angle = Math.atan2(mouseY - this.y, mouseX - this.x);
+    }
+    draw(ctx) {
+      ctx.save();
+      ctx.translate(this.x, this.y);
+      ctx.rotate(this.angle);
+      ctx.fillStyle = "white";
+      ctx.beginPath();
+      // Draw a triangle (the ship)
+      ctx.moveTo(20, 0);
+      ctx.lineTo(-15, 15);
+      ctx.lineTo(-15, -15);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+  
+  // Enemy class – red circles that chase the player
+  class Enemy {
+    constructor(x, y) {
+      this.x = x;
+      this.y = y;
+      this.radius = 15;
+      this.speed = 100; // pixels per second
+    }
+    update(dt) {
+      // Move toward the player's current position
+      let dx = player.x - this.x;
+      let dy = player.y - this.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist > 0) {
+        dx /= dist;
+        dy /= dist;
+        this.x += dx * this.speed * dt;
+        this.y += dy * this.speed * dt;
+      }
+    }
+    draw(ctx) {
+      ctx.fillStyle = "red";
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+  
+  // Bullet class – fired by the player
+  class Bullet {
+    constructor(x, y, angle, owner = "player") {
+      this.x = x;
+      this.y = y;
+      this.angle = angle;
+      this.radius = 5;
+      this.speed = 500; // pixels per second
+      this.owner = owner; // In case enemy bullets are added later
+    }
+    update(dt) {
+      this.x += Math.cos(this.angle) * this.speed * dt;
+      this.y += Math.sin(this.angle) * this.speed * dt;
+    }
+    draw(ctx) {
+      ctx.fillStyle = (this.owner === "player") ? "yellow" : "orange";
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+  
+  // Particle class – for explosion effects when enemies are destroyed
+  class Particle {
+    constructor(x, y) {
+      this.x = x;
+      this.y = y;
+      this.radius = Math.random() * 3 + 2;
+      this.angle = Math.random() * Math.PI * 2;
+      this.speed = Math.random() * 100 + 50;
+      this.alpha = 1;
+      this.decay = Math.random() * 0.5 + 0.5; // alpha decay per second
+    }
+    update(dt) {
+      this.x += Math.cos(this.angle) * this.speed * dt;
+      this.y += Math.sin(this.angle) * this.speed * dt;
+      this.alpha -= this.decay * dt;
+    }
+    draw(ctx) {
+      if (this.alpha <= 0) return;
+      ctx.save();
+      ctx.globalAlpha = this.alpha;
+      ctx.fillStyle = "orange";
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+  
+  // ---------------------------
+  // Game Functions
+  // ---------------------------
+  
+  // Spawn an enemy at a random edge of the canvas
+  function spawnEnemy() {
+    let x, y;
+    const edge = Math.floor(Math.random() * 4); // 0: top, 1: right, 2: bottom, 3: left
+    if (edge === 0) { // top
+      x = Math.random() * canvas.width;
+      y = -20;
+    } else if (edge === 1) { // right
+      x = canvas.width + 20;
+      y = Math.random() * canvas.height;
+    } else if (edge === 2) { // bottom
+      x = Math.random() * canvas.width;
+      y = canvas.height + 20;
+    } else { // left
+      x = -20;
+      y = Math.random() * canvas.height;
+    }
+    enemies.push(new Enemy(x, y));
+  }
+  
+  // Update all game objects
+  function update(dt, timestamp) {
+    if (gameOver) return;
+  
+    player.update(dt);
+  
+    // Handle shooting with cooldown (milliseconds converted to seconds)
+    shootTimer -= dt * 1000;
+    if (isShooting && shootTimer <= 0) {
+      bullets.push(new Bullet(player.x, player.y, player.angle));
+      shootTimer = shootCooldown;
+    }
+  
+    // Update bullets
+    for (let i = bullets.length - 1; i >= 0; i--) {
+      bullets[i].update(dt);
+      // Remove bullets that are off-canvas
+      if (bullets[i].x < -10 || bullets[i].x > canvas.width + 10 ||
+          bullets[i].y < -10 || bullets[i].y > canvas.height + 10) {
+        bullets.splice(i, 1);
+      }
+    }
+  
+    // Update enemies and check for collisions with the player and bullets
+    for (let i = enemies.length - 1; i >= 0; i--) {
+      enemies[i].update(dt);
+      // Check collision with player (circle-to-circle collision)
+      const minDist = player.radius + enemies[i].radius;
+      if (distSq(player.x, player.y, enemies[i].x, enemies[i].y) < minDist * minDist) {
+        // The enemy has reached the player – game over!
+        gameOver = true;
+        gameOverDiv.style.display = "block";
+        return;
+      }
+      // Check collision with each bullet
+      for (let j = bullets.length - 1; j >= 0; j--) {
+        const collisionDist = enemies[i].radius + bullets[j].radius;
+        if (distSq(enemies[i].x, enemies[i].y, bullets[j].x, bullets[j].y) < collisionDist * collisionDist) {
+          // Spawn explosion particles at the enemy's position
+          for (let k = 0; k < 15; k++) {
+            particles.push(new Particle(enemies[i].x, enemies[i].y));
+          }
+          // Remove enemy and bullet, and increase score
+          enemies.splice(i, 1);
+          bullets.splice(j, 1);
+          score += 10;
+          break;
+        }
+      }
+    }
+  
+    // Update particles (explosion effects)
+    for (let i = particles.length - 1; i >= 0; i--) {
+      particles[i].update(dt);
+      if (particles[i].alpha <= 0) {
+        particles.splice(i, 1);
+      }
+    }
+  
+    // Spawn new enemies at set intervals
+    if (timestamp - lastEnemySpawnTime > spawnInterval) {
+      spawnEnemy();
+      lastEnemySpawnTime = timestamp;
+      // Optionally, gradually reduce spawn interval to increase difficulty:
+      if (spawnInterval > 500) {
+        spawnInterval -= 10;
+      }
+    }
+  
+    // Update the score display
+    scoreBoard.textContent = "Score: " + score;
+  }
+  
+  // Render all game objects
+  function draw() {
+    // Clear the canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
+    // Draw player
+    player.draw(ctx);
+  
+    // Draw enemies
+    for (const enemy of enemies) {
+      enemy.draw(ctx);
+    }
+  
+    // Draw bullets
+    for (const bullet of bullets) {
+      bullet.draw(ctx);
+    }
+  
+    // Draw particles (explosions)
+    for (const particle of particles) {
+      particle.draw(ctx);
+    }
+  }
+  
+  // Main game loop using requestAnimationFrame
+  function gameLoop(timestamp) {
+    if (!lastTime) lastTime = timestamp;
+    const dt = (timestamp - lastTime) / 1000; // convert ms to seconds
+    lastTime = timestamp;
+  
+    update(dt, timestamp);
+    draw();
+  
+    if (!gameOver) {
+      requestAnimationFrame(gameLoop);
+    }
+  }
+  
+  // Reset the game to its initial state
+  function resetGame() {
+    player = new Player(canvas.width / 2, canvas.height / 2);
+    enemies = [];
+    bullets = [];
+    particles = [];
+    keys = {};
+    score = 0;
+    gameOver = false;
+    shootTimer = 0;
+    spawnInterval = 1500;
+    lastEnemySpawnTime = performance.now();
+    gameOverDiv.style.display = "none";
+    lastTime = 0;
+    requestAnimationFrame(gameLoop);
+  }
+  
+  // ---------------------------
+  // Event Listeners
+  // ---------------------------
+  
+  // Keyboard controls
+  window.addEventListener("keydown", (e) => {
+    keys[e.key] = true;
+  });
+  window.addEventListener("keyup", (e) => {
+    keys[e.key] = false;
+  });
+  
+  // Mouse movement to update aiming
+  canvas.addEventListener("mousemove", (e) => {
+    const rect = canvas.getBoundingClientRect();
+    mouseX = e.clientX - rect.left;
+    mouseY = e.clientY - rect.top;
+  });
+  
+  // Mouse down/up to control shooting
+  canvas.addEventListener("mousedown", () => { isShooting = true; });
+  canvas.addEventListener("mouseup", () => { isShooting = false; });
+  canvas.addEventListener("mouseleave", () => { isShooting = false; });
+  
+  // Restart button click
+  restartBtn.addEventListener("click", resetGame);
+  
+  // ---------------------------
+  // Start the Game
+  // ---------------------------
+  
+  resetGame();
+  </script>
+</body>
+</html>
