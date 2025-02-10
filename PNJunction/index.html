@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>PN Junction Electron Flow Simulation</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+
+        #gui {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+    <!-- Container for dat.GUI controls -->
+    <div id="gui"></div>
+
+    <!-- Include three.js and dat.GUI from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.9/dat.gui.min.js"></script>
+
+    <script>
+    // Simulation parameters object (for energy level and simulation speed)
+    const params = {
+      energyLevel: 1.0,      // Determines the electron speed magnitude
+      simulationSpeed: 1.0   // Global speed multiplier for the simulation
+    };
+
+    // Create the scene, camera, and renderer
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    // Add lighting: a point light and ambient light for better visibility
+    const pointLight = new THREE.PointLight(0xffffff, 1);
+    pointLight.position.set(10, 10, 10);
+    scene.add(pointLight);
+    scene.add(new THREE.AmbientLight(0x404040));
+
+    // Create a plane that represents the region of the PN junction
+    const junctionWidth = 20;
+    const junctionHeight = 10;
+    const planeGeometry = new THREE.PlaneGeometry(junctionWidth, junctionHeight);
+    const planeMaterial = new THREE.MeshBasicMaterial({
+      color: 0xcccccc,
+      side: THREE.DoubleSide,
+      opacity: 0.5,
+      transparent: true
+    });
+    const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+    plane.rotation.x = -Math.PI / 2; // Lay the plane flat
+    scene.add(plane);
+
+    // Draw a red line at x = 0 to visually mark the junction interface
+    const junctionLineGeometry = new THREE.BufferGeometry();
+    const lineVertices = new Float32Array([
+      0, 0.1, -junctionHeight/2,
+      0, 0.1,  junctionHeight/2
+    ]);
+    junctionLineGeometry.setAttribute('position', new THREE.BufferAttribute(lineVertices, 3));
+    const junctionLineMaterial = new THREE.LineBasicMaterial({ color: 0xff0000 });
+    const junctionLine = new THREE.Line(junctionLineGeometry, junctionLineMaterial);
+    scene.add(junctionLine);
+
+    // Create electrons as small blue spheres
+    const electrons = [];
+    const electronGeometry = new THREE.SphereGeometry(0.2, 16, 16);
+    const electronMaterial = new THREE.MeshPhongMaterial({ color: 0x0000ff });
+    const numElectrons = 50; // Number of electrons per side
+
+    // Create electrons on the N-side (left side) moving rightward
+    for (let i = 0; i < numElectrons; i++) {
+      const electron = new THREE.Mesh(electronGeometry, electronMaterial);
+      electron.position.x = -junctionWidth/2 + Math.random() * (junctionWidth/2 - 1);
+      electron.position.y = 0.3; // Slightly above the plane
+      electron.position.z = -junctionHeight/2 + Math.random() * junctionHeight;
+      // Store a velocity vector in userData
+      electron.userData = { velocity: new THREE.Vector3(params.energyLevel * 0.05, 0, 0) };
+      electrons.push(electron);
+      scene.add(electron);
+    }
+
+    // Create electrons on the P-side (right side) moving leftward
+    for (let i = 0; i < numElectrons; i++) {
+      const electron = new THREE.Mesh(electronGeometry, electronMaterial);
+      electron.position.x = 0 + Math.random() * (junctionWidth/2 - 1);
+      electron.position.y = 0.3;
+      electron.position.z = -junctionHeight/2 + Math.random() * junctionHeight;
+      electron.userData = { velocity: new THREE.Vector3(-params.energyLevel * 0.05, 0, 0) };
+      electrons.push(electron);
+      scene.add(electron);
+    }
+
+    // Position the camera to get a good view of the simulation
+    camera.position.set(0, 15, 20);
+    camera.lookAt(0, 0, 0);
+
+    // Set up dat.GUI controls and attach to the container div
+    const gui = new dat.GUI({ autoPlace: false });
+    document.getElementById("gui").appendChild(gui.domElement);
+    gui.add(params, "energyLevel", 0.1, 5.0).step(0.1).name("Energy Level").onChange(updateElectronVelocities);
+    gui.add(params, "simulationSpeed", 0.1, 5.0).step(0.1).name("Sim Speed");
+
+    // Function to update electron velocities when energy level changes
+    function updateElectronVelocities() {
+      electrons.forEach(electron => {
+        // Determine direction based on the current velocity (positive means moving right, negative means moving left)
+        let dir = electron.userData.velocity.x >= 0 ? 1 : -1;
+        electron.userData.velocity.x = dir * params.energyLevel * 0.05;
+      });
+    }
+
+    // Create a clock for smooth animation timing
+    const clock = new THREE.Clock();
+
+    // Animation loop: update electron positions based on their velocities
+    function animate() {
+      requestAnimationFrame(animate);
+      const delta = clock.getDelta() * params.simulationSpeed;
+
+      electrons.forEach(electron => {
+        // Update position according to its velocity and the simulation speed multiplier
+        electron.position.add(electron.userData.velocity.clone().multiplyScalar(delta));
+
+        // Reset electrons when they exit the simulation bounds so they can re-enter from the opposite side.
+        // For electrons moving right, if they leave the right edge, reposition them to the left edge.
+        if (electron.userData.velocity.x > 0 && electron.position.x > junctionWidth/2) {
+          electron.position.x = -junctionWidth/2;
+          electron.position.z = -junctionHeight/2 + Math.random() * junctionHeight;
+        }
+        // For electrons moving left, if they leave the left edge, reposition them to the right edge.
+        else if (electron.userData.velocity.x < 0 && electron.position.x < -junctionWidth/2) {
+          electron.position.x = junctionWidth/2;
+          electron.position.z = -junctionHeight/2 + Math.random() * junctionHeight;
+        }
+      });
+
+      renderer.render(scene, camera);
+    }
+
+    animate();
+
+    // Handle window resizing to maintain aspect ratio and full screen
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+    </script>
+</body>
+</html>
