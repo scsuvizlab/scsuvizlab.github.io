@@ -1,22 +1,112 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Conway's Game of Life</title>
-  <link rel="stylesheet" href="styles.css" />
-</head>
-<body>
-  <h1>Conway's Game of Life</h1>
-  <div id="game-container">
-    <canvas id="game-canvas"></canvas>
-  </div>
-  <div id="controls">
-    <button id="start-button">Start</button>
-    <button id="stop-button">Stop</button>
-    <button id="step-button">Step</button>
-    <button id="clear-button">Clear</button>
-  </div>
+import React, { useState, useCallback, useRef } from 'react';
+import { Play, Pause, RefreshCw } from 'lucide-react';
 
-  <script src="script.js"></script>
-</body>
-</html>
+const GRID_SIZE = 30;
+const CELL_SIZE = 20;
+
+const GameOfLife = () => {
+  const [grid, setGrid] = useState(() => {
+    const rows = Array(GRID_SIZE).fill(null);
+    return rows.map(() => Array(GRID_SIZE).fill(false));
+  });
+  
+  const [isRunning, setIsRunning] = useState(false);
+  const runningRef = useRef(isRunning);
+  runningRef.current = isRunning;
+
+  const randomizeGrid = () => {
+    const newGrid = grid.map(row => 
+      row.map(() => Math.random() > 0.7)
+    );
+    setGrid(newGrid);
+  };
+
+  const countNeighbors = (grid, x, y) => {
+    let count = 0;
+    for (let i = -1; i <= 1; i++) {
+      for (let j = -1; j <= 1; j++) {
+        if (i === 0 && j === 0) continue;
+        const newX = x + i;
+        const newY = y + j;
+        if (newX >= 0 && newX < GRID_SIZE && newY >= 0 && newY < GRID_SIZE) {
+          count += grid[newX][newY] ? 1 : 0;
+        }
+      }
+    }
+    return count;
+  };
+
+  const runSimulation = useCallback(() => {
+    if (!runningRef.current) return;
+
+    setGrid(g => {
+      const newGrid = g.map((row, i) =>
+        row.map((cell, j) => {
+          const neighbors = countNeighbors(g, i, j);
+          if (cell) {
+            return neighbors === 2 || neighbors === 3;
+          } else {
+            return neighbors === 3;
+          }
+        })
+      );
+      return newGrid;
+    });
+
+    setTimeout(runSimulation, 100);
+  }, []);
+
+  const toggleCell = (i, j) => {
+    const newGrid = [...grid];
+    newGrid[i] = [...grid[i]];
+    newGrid[i][j] = !grid[i][j];
+    setGrid(newGrid);
+  };
+
+  return (
+    <div className="flex flex-col items-center gap-4 p-4">
+      <div className="flex gap-4">
+        <button
+          className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          onClick={() => {
+            setIsRunning(!isRunning);
+            if (!isRunning) {
+              runningRef.current = true;
+              runSimulation();
+            }
+          }}
+        >
+          {isRunning ? <Pause size={20} /> : <Play size={20} />}
+          {isRunning ? 'Pause' : 'Start'}
+        </button>
+        <button
+          className="flex items-center gap-2 px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+          onClick={randomizeGrid}
+        >
+          <RefreshCw size={20} />
+          Randomize
+        </button>
+      </div>
+      
+      <div 
+        className="grid border border-gray-200"
+        style={{
+          gridTemplateColumns: `repeat(${GRID_SIZE}, ${CELL_SIZE}px)`
+        }}
+      >
+        {grid.map((row, i) =>
+          row.map((cell, j) => (
+            <div
+              key={`${i}-${j}`}
+              className={`w-5 h-5 border border-gray-200 cursor-pointer
+                ${cell ? 'bg-blue-500' : 'bg-white'}`}
+              onClick={() => toggleCell(i, j)}
+            />
+          ))
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default GameOfLife;
