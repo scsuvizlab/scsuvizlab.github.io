@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Minesweeper</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #eee;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 {
+      margin-bottom: 10px;
+    }
+    #board {
+      display: grid;
+      /* 10 columns for a 10x10 grid; adjust if you change rows/cols below */
+      grid-template-columns: repeat(10, 30px);
+      grid-gap: 2px;
+      margin-bottom: 20px;
+    }
+    .cell {
+      width: 30px;
+      height: 30px;
+      background: #ccc;
+      border: 1px solid #999;
+      text-align: center;
+      line-height: 30px;
+      font-weight: bold;
+      cursor: pointer;
+      user-select: none;
+    }
+    .cell.revealed {
+      background: #eee;
+      cursor: default;
+    }
+    .cell.mine {
+      background: #f44336;
+      color: white;
+    }
+    .cell.flagged {
+      background: #ffeb3b;
+    }
+    button {
+      padding: 8px 16px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Minesweeper</h1>
+  <div id="board"></div>
+  <button id="reset">Reset Game</button>
+
+  <script>
+    // Game configuration
+    const rows = 10;       // Number of rows
+    const cols = 10;       // Number of columns
+    const mineCount = 10;  // Number of mines
+
+    let board = [];   // 2D array for cell objects
+    let gameOver = false;
+
+    const boardElement = document.getElementById('board');
+    const resetButton = document.getElementById('reset');
+
+    // Disable default context menu on the board (for right-click flagging)
+    boardElement.addEventListener('contextmenu', (e) => e.preventDefault());
+
+    // Initialize the game board
+    function initBoard() {
+      board = [];
+      gameOver = false;
+      boardElement.innerHTML = ''; // Clear the board UI
+
+      // Create the 2D board array
+      for (let i = 0; i < rows; i++) {
+        const row = [];
+        for (let j = 0; j < cols; j++) {
+          row.push({
+            mine: false,
+            revealed: false,
+            flagged: false,
+            neighbor: 0,
+            row: i,
+            col: j
+          });
+        }
+        board.push(row);
+      }
+
+      // Randomly place mines
+      let placedMines = 0;
+      while (placedMines < mineCount) {
+        let r = Math.floor(Math.random() * rows);
+        let c = Math.floor(Math.random() * cols);
+        if (!board[r][c].mine) {
+          board[r][c].mine = true;
+          placedMines++;
+        }
+      }
+
+      // Calculate the number of neighboring mines for each cell
+      for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+          if (board[i][j].mine) continue;
+          let count = 0;
+          for (let x = -1; x <= 1; x++) {
+            for (let y = -1; y <= 1; y++) {
+              const ni = i + x;
+              const nj = j + y;
+              if (ni >= 0 && ni < rows && nj >= 0 && nj < cols) {
+                if (board[ni][nj].mine) count++;
+              }
+            }
+          }
+          board[i][j].neighbor = count;
+        }
+      }
+
+      // Create the UI cells
+      for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+          const cellElement = document.createElement('div');
+          cellElement.classList.add('cell');
+          cellElement.setAttribute('data-row', i);
+          cellElement.setAttribute('data-col', j);
+          // Left click to reveal a cell
+          cellElement.addEventListener('click', cellClick);
+          // Right click to toggle a flag
+          cellElement.addEventListener('contextmenu', cellRightClick);
+          boardElement.appendChild(cellElement);
+        }
+      }
+    }
+
+    // Handle left-click on a cell
+    function cellClick(e) {
+      if (gameOver) return;
+
+      const cellElement = e.target;
+      const row = parseInt(cellElement.getAttribute('data-row'));
+      const col = parseInt(cellElement.getAttribute('data-col'));
+      const cell = board[row][col];
+
+      if (cell.revealed || cell.flagged) return;
+
+      revealCell(row, col);
+      checkWin();
+    }
+
+    // Handle right-click for flagging/unflagging a cell
+    function cellRightClick(e) {
+      e.preventDefault();
+      if (gameOver) return;
+
+      const cellElement = e.target;
+      const row = parseInt(cellElement.getAttribute('data-row'));
+      const col = parseInt(cellElement.getAttribute('data-col'));
+      const cell = board[row][col];
+
+      if (cell.revealed) return;
+
+      cell.flagged = !cell.flagged;
+      if (cell.flagged) {
+        cellElement.classList.add('flagged');
+        cellElement.textContent = '🚩';
+      } else {
+        cellElement.classList.remove('flagged');
+        cellElement.textContent = '';
+      }
+    }
+
+    // Reveal a cell; if it has no neighboring mines, recursively reveal adjacent cells
+    function revealCell(row, col) {
+      const cell = board[row][col];
+      if (cell.revealed || cell.flagged) return;
+      cell.revealed = true;
+
+      const cellElement = document.querySelector(`.cell[data-row="${row}"][data-col="${col}"]`);
+      cellElement.classList.add('revealed');
+
+      // If the cell is a mine, game over
+      if (cell.mine) {
+        cellElement.classList.add('mine');
+        cellElement.textContent = '💣';
+        gameOver = true;
+        revealAllMines();
+        setTimeout(() => alert('Game Over!'), 10);
+        return;
+      }
+
+      // If the cell has a neighboring mine count, display it
+      if (cell.neighbor > 0) {
+        cellElement.textContent = cell.neighbor;
+      } else {
+        // Otherwise, reveal neighboring cells recursively
+        for (let x = -1; x <= 1; x++) {
+          for (let y = -1; y <= 1; y++) {
+            const newRow = row + x;
+            const newCol = col + y;
+            if (newRow >= 0 && newRow < rows && newCol >= 0 && newCol < cols) {
+              revealCell(newRow, newCol);
+            }
+          }
+        }
+      }
+    }
+
+    // Reveal all mines when the game is over
+    function revealAllMines() {
+      for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+          if (board[i][j].mine) {
+            const cellElement = document.querySelector(`.cell[data-row="${i}"][data-col="${j}"]`);
+            if (!cellElement.classList.contains('revealed')) {
+              cellElement.classList.add('revealed', 'mine');
+              cellElement.textContent = '💣';
+            }
+          }
+        }
+      }
+    }
+
+    // Check if the player has won by revealing all non-mine cells
+    function checkWin() {
+      let unrevealedCount = 0;
+      for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+          if (!board[i][j].revealed) {
+            unrevealedCount++;
+          }
+        }
+      }
+      if (unrevealedCount === mineCount) {
+        gameOver = true;
+        setTimeout(() => alert('You Win!'), 10);
+      }
+    }
+
+    // Restart the game when clicking the reset button
+    resetButton.addEventListener('click', initBoard);
+
+    // Initialize the board on page load
+    initBoard();
+  </script>
+</body>
+</html>
