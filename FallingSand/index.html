@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Falling Sand Game</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #333;
+            font-family: Arial, sans-serif;
+            color: white;
+        }
+        .game-container {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            gap: 20px;
+            margin: 10px;
+            max-width: 1200px;
+        }
+        canvas {
+            display: block;
+            border: 2px solid #666;
+        }
+        .canvas-container {
+            position: relative;
+        }
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: 10px;
+            width: 220px;
+            order: 2;
+        }
+        button {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        button.selected {
+            border: 2px solid white;
+            transform: translateY(-2px);
+        }
+        .particle-selector {
+            background-color: #555;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+        // Styles for the new grid
+        .particle-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+        .emitter-settings {
+            background-color: #444;
+            padding: 8px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        #emitterType {
+            width: 100%;
+            padding: 5px;
+            margin-top: 5px;
+            background-color: #333;
+            color: white;
+            border: 1px solid #666;
+            border-radius: 4px;
+        }
+        .brush-size {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .info {
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+            width: 100%;
+            text-align: left;
+        }
+        #fps {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 5px;
+            border-radius: 4px;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+    <h1>Falling Sand Game</h1>
+    
+    <div class="game-container">
+        <div class="canvas-container">
+            <div id="canvas-wrapper"></div>
+            <div id="fps">FPS: 0</div>
+        </div>
+        
+        <div class="controls">
+            <div class="particle-selector">
+                <h3>Particles:</h3>
+                <div class="particle-buttons">
+                    <button id="sand" style="background-color: #e6c34c;">Sand</button>
+                    <button id="water" style="background-color: #4d9be6;">Water</button>
+                    <button id="oil" style="background-color: #7b5c3f;">Oil</button>
+                    <button id="fire" style="background-color: #e65c3f;">Fire</button>
+                    <button id="smoke" style="background-color: #777;">Smoke</button>
+                    <button id="wall" style="background-color: #555;">Wall</button>
+                    <button id="blocker" style="background-color: #282828;">Blocker</button>
+                    <button id="eraser" style="background-color: #f77;">Eraser</button>
+                </div>
+                
+                <h3>Emitters:</h3>
+                <div class="emitter-settings">
+                    <div>Current emitter type:</div>
+                    <select id="emitterType">
+                        <option value="sand">Sand</option>
+                        <option value="water">Water</option>
+                        <option value="oil">Oil</option>
+                        <option value="fire">Fire</option>
+                    </select>
+                    <button id="emitter" style="background-color: #9c4ce6; margin-top: 5px; width: 100%;">Place Emitter</button>
+                </div>
+                
+                <div class="brush-size">
+                    <label for="brushSize">Brush Size:</label>
+                    <input type="range" id="brushSize" min="1" max="20" value="5">
+                    <span id="brushSizeValue">5</span>
+                </div>
+                <button id="resetBtn" style="background-color: #e63f3f;">Clear All</button>
+            </div>
+            
+            <div class="info">
+                <p>Click and drag to draw particles. Different particles have different physical properties!</p>
+                <p>Fire burns flammables like oil. Water extinguishes fire. Smoke rises. Oil floats on water.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let grid = [];
+        let nextGrid = [];
+        let particleType = "sand";
+        let brushSize = 5;
+        let gridSize = 4; // Size of each cell in pixels
+        let cols, rows;
+        let emitters = [];
+        let currentEmitterType = "sand"; // Track current emitter type
+        let lastFrameTime = 0;
+        let frameCount = 0;
+        let fpsValue = 0;
+        let fpsUpdateInterval = 500; // Update FPS every 500ms
+        let lastFpsUpdate = 0;
+
+        // Particle properties
+        const EMPTY = 0;
+        const SAND = 1;
+        const WATER = 2;
+        const WALL = 3;
+        const OIL = 4;
+        const FIRE = 5;
+        const SMOKE = 6;
+        const EMITTER = 7;
+        const BLOCKER = 8;
+
+        // Colors for each particle type
+        const colors = {
+            [EMPTY]: [51, 51, 51],
+            [SAND]: [230, 195, 76],
+            [WATER]: [77, 155, 230],
+            [WALL]: [85, 85, 85],
+            [OIL]: [123, 92, 63],
+            [FIRE]: [230, 92, 63],
+            [SMOKE]: [119, 119, 119],
+            [EMITTER]: [156, 76, 230],
+            [BLOCKER]: [40, 40, 40]
+        };
+
+        // Particle type mapping
+        const typeMap = {
+            "sand": SAND,
+            "water": WATER,
+            "wall": WALL,
+            "oil": OIL,
+            "fire": FIRE,
+            "smoke": SMOKE,
+            "emitter": EMITTER,
+            "eraser": EMPTY,
+            "blocker": BLOCKER
+        };
+
+        // Properties for particles
+        const properties = {
+            [SAND]: { density: 2.0, inertia: 0.8, flammable: false },
+            [WATER]: { density: 1.0, inertia: 0.4, flammable: false, evaporationChance: 0.0001 },
+            [WALL]: { density: 10.0, inertia: 0, flammable: false },
+            [OIL]: { density: 0.8, inertia: 0.6, flammable: true, burnChance: 0.2 },
+            [FIRE]: { density: 0.5, inertia: 0.3, flammable: false, lifetime: 5, spreadChance: 0.3 },
+            [SMOKE]: { density: 0.1, inertia: 0.2, flammable: false, lifetime: 100, riseStrength: 0.8 },
+            [BLOCKER]: { density: 10.0, inertia: 0, flammable: false }
+        };
+
+        function setup() {
+            // Create canvas that fills most of the window
+            let canvasWidth = min(windowWidth - 300, 800);
+            let canvasHeight = min(windowHeight - 100, 600);
+            
+            // Create canvas inside the canvas-wrapper div
+            let canvas = createCanvas(canvasWidth, canvasHeight);
+            canvas.parent('canvas-wrapper');
+            frameRate(60);
+            
+            // Calculate grid dimensions
+            cols = floor(width / gridSize);
+            rows = floor(height / gridSize);
+            
+            // Initialize grids
+            initializeGrid();
+            
+            // Set up button event listeners
+            setupButtons();
+            
+            // Set up brush size slider
+            document.getElementById('brushSize').addEventListener('input', function() {
+                brushSize = parseInt(this.value);
+                document.getElementById('brushSizeValue').textContent = brushSize;
+            });
+            
+            // Reset button
+            document.getElementById('resetBtn').addEventListener('click', function() {
+                resetGrid();
+            });
+            
+            // Emitter type selector
+            document.getElementById('emitterType').addEventListener('change', function() {
+                currentEmitterType = this.value;
+            });
+            
+            // Select sand by default
+            selectButton('sand');
+            
+            // Set default emitter type
+            currentEmitterType = 'sand';
+        }
+
+        function initializeGrid() {
+            grid = [];
+            nextGrid = [];
+            emitters = [];
+            
+            for (let y = 0; y < rows; y++) {
+                grid[y] = [];
+                nextGrid[y] = [];
+                for (let x = 0; x < cols; x++) {
+                    grid[y][x] = {
+                        type: EMPTY,
+                        lifetime: 0,
+                        velocity: { x: 0, y: 0 }
+                    };
+                    nextGrid[y][x] = {
+                        type: EMPTY,
+                        lifetime: 0,
+                        velocity: { x: 0, y: 0 }
+                    };
+                }
+            }
+        }
+        
+        function resetGrid() {
+            // Reset the grid without redefining the arrays
+            emitters = [];
+            
+            for (let y = 0; y < rows; y++) {
+                for (let x = 0; x < cols; x++) {
+                    grid[y][x] = {
+                        type: EMPTY,
+                        lifetime: 0,
+                        velocity: { x: 0, y: 0 }
+                    };
+                    nextGrid[y][x] = {
+                        type: EMPTY,
+                        lifetime: 0,
+                        velocity: { x: 0, y: 0 }
+                    };
+                }
+            }
+        }
+
+        function setupButtons() {
+            const buttons = document.querySelectorAll('.particle-buttons button');
+            buttons.forEach(button => {
+                button.addEventListener('click', function() {
+                    particleType = this.id;
+                    selectButton(particleType);
+                });
+            });
+            
+            // Setup emitter button
+            document.getElementById('emitter').addEventListener('click', function() {
+                particleType = "emitter";
+                selectButton("emitter");
+            });
+        }
+
+        function selectButton(id) {
+            const buttons = document.querySelectorAll('.particle-buttons button');
+            buttons.forEach(button => {
+                if (button.id === id) {
+                    button.classList.add('selected');
+                } else {
+                    button.classList.remove('selected');
+                }
+            });
+        }
+
+        function draw() {
+            background(51);
+            
+            // Update and render the grid
+            updateGrid();
+            renderGrid();
+            
+            // Handle emitters
+            handleEmitters();
+            
+            // Handle user input
+            handleUserInput();
+            
+            // Update FPS counter
+            updateFPS();
+        }
+
+        function updateFPS() {
+            const now = millis();
+            frameCount++;
+            
+            if (now - lastFpsUpdate > fpsUpdateInterval) {
+                fpsValue = (frameCount / ((now - lastFpsUpdate) / 1000)).toFixed(1);
+                document.getElementById('fps').textContent = `FPS: ${fpsValue}`;
+                lastFpsUpdate = now;
+                frameCount = 0;
+            }
+        }
+
+        function handleUserInput() {
+            if (mouseIsPressed && mouseX >= 0 && mouseX < width && mouseY >= 0 && mouseY < height) {
+                const gridX = floor(mouseX / gridSize);
+                const gridY = floor(mouseY / gridSize);
+                
+                // Draw with brush size
+                for (let y = -brushSize; y <= brushSize; y++) {
+                    for (let x = -brushSize; x <= brushSize; x++) {
+                        // Only draw within a circle of radius brushSize
+                        if (x*x + y*y <= brushSize*brushSize) {
+                            const drawX = gridX + x;
+                            const drawY = gridY + y;
+                            
+                            if (drawX >= 0 && drawX < cols && drawY >= 0 && drawY < rows) {
+                                const type = typeMap[particleType];
+                                
+                                // If placing an emitter, store its location
+                                if (type === EMITTER && grid[drawY][drawX].type !== EMITTER) {
+                                    emitters.push({ 
+                                        x: drawX, 
+                                        y: drawY, 
+                                        particleType: currentEmitterType, 
+                                        interval: 5, 
+                                        counter: 0 
+                                    });
+                                }
+                                
+                                // Set particle type
+                                grid[drawY][drawX].type = type;
+                                grid[drawY][drawX].lifetime = 0;
+                                
+                                // If fire, give it appropriate lifetime and initial velocity
+                                if (type === FIRE) {
+                                    grid[drawY][drawX].velocity = { x: random(-0.2, 0.2), y: -0.1 };
+                                    grid[drawY][drawX].lifetime = properties[FIRE].lifetime;
+                                } else if (type === SMOKE) {
+                                    grid[drawY][drawX].velocity = { x: random(-0.1, 0.1), y: -0.2 };
+                                    grid[drawY][drawX].lifetime = properties[SMOKE].lifetime;
+                                } else if (type === SAND || type === WATER || type === OIL) {
+                                    grid[drawY][drawX].velocity = { x: 0, y: 0.5 };
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        function handleEmitters() {
+            for (let i = 0; i < emitters.length; i++) {
+                const emitter = emitters[i];
+                
+                // Skip if emitter has been erased
+                if (grid[emitter.y][emitter.x].type !== EMITTER) {
+                    emitters.splice(i, 1);
+                    i--;
+                    continue;
+                }
+                
+                emitter.counter++;
+                if (emitter.counter >= emitter.interval) {
+                    emitter.counter = 0;
+                    
+                    // Emit particles in a small area below the emitter
+                    for (let j = 0; j < 3; j++) {
+                        const emitX = emitter.x + floor(random(-1, 2));
+                        const emitY = emitter.y + 1;
+                        
+                        if (emitX >= 0 && emitX < cols && emitY >= 0 && emitY < rows && 
+                            grid[emitY][emitX].type === EMPTY) {
+                            
+                            // Set the type based on the emitter's type
+                            grid[emitY][emitX].type = typeMap[emitter.particleType];
+                            
+                            // Set appropriate velocity based on particle type
+                            if (emitter.particleType === 'fire') {
+                                grid[emitY][emitX].velocity = { x: random(-0.2, 0.2), y: -0.1 };
+                                grid[emitY][emitX].lifetime = properties[FIRE].lifetime;
+                            } else if (emitter.particleType === 'water' || emitter.particleType === 'oil') {
+                                grid[emitY][emitX].velocity = { x: random(-0.3, 0.3), y: 0.5 };
+                            } else {
+                                grid[emitY][emitX].velocity = { x: random(-0.2, 0.2), y: 0.5 };
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        function updateGrid() {
+            // Copy current grid to next grid
+            for (let y = 0; y < rows; y++) {
+                for (let x = 0; x < cols; x++) {
+                    nextGrid[y][x] = { ...grid[y][x] };
+                }
+            }
+            
+            // Update particles from bottom to top (for falling particles)
+            for (let y = rows - 1; y >= 0; y--) {
+                // Randomize horizontal direction to avoid bias
+                const xOrder = [...Array(cols).keys()];
+                if (random() > 0.5) xOrder.reverse();
+                
+                for (const x of xOrder) {
+                    const cell = grid[y][x];
+                    
+                    // Skip empty cells and walls
+                    if (cell.type === EMPTY || cell.type === WALL || cell.type === EMITTER || cell.type === BLOCKER) continue;
+                    
+                    // Handle fire lifetime and spread
+                    if (cell.type === FIRE) {
+                        // Always decrease lifetime for fire
+                        cell.lifetime--;
+                        
+                        let hasAdjacentOil = false;
+                        
+                        // Check for adjacent oil to sustain fire
+                        const dirs = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+                        for (const dir of dirs) {
+                            const nx = x + dir[0];
+                            const ny = y + dir[1];
+                            
+                            if (nx >= 0 && nx < cols && ny >= 0 && ny < rows) {
+                                // If there's oil nearby, try to ignite it
+                                if (grid[ny][nx].type === OIL) {
+                                    hasAdjacentOil = true;
+                                    if (random() < properties[OIL].burnChance) {
+                                        nextGrid[ny][nx].type = FIRE;
+                                        nextGrid[ny][nx].lifetime = properties[FIRE].lifetime;
+                                        nextGrid[ny][nx].velocity = { x: random(-0.2, 0.2), y: -0.1 };
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // If fire burns out, turn into smoke
+                        if (cell.lifetime <= 0) {
+                            nextGrid[y][x].type = SMOKE;
+                            nextGrid[y][x].lifetime = properties[SMOKE].lifetime;
+                            nextGrid[y][x].velocity = { x: random(-0.1, 0.1), y: -0.2 };
+                            continue;
+                        }
+                        
+                        // Update fire velocity to move upward more consistently
+                        if (random() < 0.3) {
+                            cell.velocity.y -= 0.05;
+                        }
+                        
+                        // Fire spreads to flammable neighbors
+                        if (random() < properties[FIRE].spreadChance) {
+                            const dirs = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+                            const dir = dirs[floor(random(dirs.length))];
+                            const nx = x + dir[0];
+                            const ny = y + dir[1];
+                            
+                            if (nx >= 0 && nx < cols && ny >= 0 && ny < rows) {
+                                const neighbor = grid[ny][nx];
+                                if (neighbor.type === OIL && properties[OIL].flammable && random() < properties[OIL].burnChance) {
+                                    nextGrid[ny][nx].type = FIRE;
+                                    nextGrid[ny][nx].lifetime = properties[FIRE].lifetime;
+                                    nextGrid[ny][nx].velocity = { x: random(-0.2, 0.2), y: -0.1 };
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Handle smoke lifetime
+                    if (cell.type === SMOKE) {
+                        cell.lifetime--;
+                        if (cell.lifetime <= 0) {
+                            nextGrid[y][x].type = EMPTY;
+                            continue;
+                        }
+                    }
+                    
+                    // Water extinguishes fire
+                    if (cell.type === WATER) {
+                        const dirs = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+                        for (const dir of dirs) {
+                            const nx = x + dir[0];
+                            const ny = y + dir[1];
+                            
+                            if (nx >= 0 && nx < cols && ny >= 0 && ny < rows && grid[ny][nx].type === FIRE) {
+                                nextGrid[ny][nx].type = SMOKE;
+                                nextGrid[ny][nx].lifetime = properties[SMOKE].lifetime;
+                                nextGrid[ny][nx].velocity = { x: random(-0.1, 0.1), y: -0.2 };
+                            }
+                        }
+                    }
+                    
+                    // Apply physics for moving particles
+                    applyPhysics(x, y, cell);
+                }
+            }
+            
+            // Swap grids
+            let temp = grid;
+            grid = nextGrid;
+            nextGrid = temp;
+        }
+
+        function applyPhysics(x, y, cell) {
+            if (cell.type === WALL || cell.type === EMITTER || cell.type === BLOCKER) return;
+            
+            // Add gravity to velocity for falling particles
+            if (cell.type === SAND || cell.type === WATER || cell.type === OIL) {
+                cell.velocity.y += 0.05;
+            } else if (cell.type === SMOKE) {
+                // Smoke rises
+                cell.velocity.y -= properties[SMOKE].riseStrength * 0.05;
+            } else if (cell.type === FIRE) {
+                // Fire rises slightly and flickers
+                cell.velocity.y -= 0.02;
+                cell.velocity.x += random(-0.1, 0.1);
+            }
+            
+            // Apply velocity with inertia
+            let newX = x;
+            let newY = y;
+            
+            // Calculate target position
+            let targetX = x + round(cell.velocity.x);
+            let targetY = y + round(cell.velocity.y);
+            
+            // Ensure we stay in bounds
+            targetX = constrain(targetX, 0, cols - 1);
+            targetY = constrain(targetY, 0, rows - 1);
+            
+            // Try to move to target
+            if (canMoveTo(cell, x, y, targetX, targetY)) {
+                moveCell(x, y, targetX, targetY);
+                return;
+            }
+            
+            // For sand, water, and oil - try to move downward and to the sides
+            if (cell.type === SAND || cell.type === WATER || cell.type === OIL) {
+                // Try moving just down
+                if (y < rows - 1 && canMoveTo(cell, x, y, x, y + 1)) {
+                    moveCell(x, y, x, y + 1);
+                    return;
+                }
+                
+                // Try moving down and to the sides
+                const tryDirections = [];
+                tryDirections.push([x - 1, y + 1]);
+                tryDirections.push([x + 1, y + 1]);
+                
+                // Shuffle directions for more natural movement
+                if (random() > 0.5) tryDirections.reverse();
+                
+                for (const [nx, ny] of tryDirections) {
+                    if (nx >= 0 && nx < cols && ny >= 0 && ny < rows && canMoveTo(cell, x, y, nx, ny)) {
+                        moveCell(x, y, nx, ny);
+                        return;
+                    }
+                }
+                
+                // For liquids, try to move sideways if down is blocked
+                if (cell.type === WATER || cell.type === OIL) {
+                    const tryHorizontal = [];
+                    tryHorizontal.push([x - 1, y]);
+                    tryHorizontal.push([x + 1, y]);
+                    
+                    // Shuffle directions
+                    if (random() > 0.5) tryHorizontal.reverse();
+                    
+                    for (const [nx, ny] of tryHorizontal) {
+                        if (nx >= 0 && nx < cols && canMoveTo(cell, x, y, nx, ny)) {
+                            moveCell(x, y, nx, ny);
+                            return;
+                        }
+                    }
+                }
+            }
+            
+            // For smoke, try to move upward and to the sides
+            if (cell.type === SMOKE) {
+                // Try moving just up
+                if (y > 0 && canMoveTo(cell, x, y, x, y - 1)) {
+                    moveCell(x, y, x, y - 1);
+                    return;
+                }
+                
+                // Try moving up and to the sides
+                const tryDirections = [];
+                tryDirections.push([x - 1, y - 1]);
+                tryDirections.push([x + 1, y - 1]);
+                
+                // Shuffle directions for more natural movement
+                if (random() > 0.5) tryDirections.reverse();
+                
+                for (const [nx, ny] of tryDirections) {
+                    if (nx >= 0 && nx < cols && ny >= 0 && ny < rows && canMoveTo(cell, x, y, nx, ny)) {
+                        moveCell(x, y, nx, ny);
+                        return;
+                    }
+                }
+                
+                // Try moving sideways
+                if (random() > 0.5 && x > 0 && canMoveTo(cell, x, y, x - 1, y)) {
+                    moveCell(x, y, x - 1, y);
+                    return;
+                } else if (x < cols - 1 && canMoveTo(cell, x, y, x + 1, y)) {
+                    moveCell(x, y, x + 1, y);
+                    return;
+                }
+            }
+            
+            // Apply some dampening to velocity to simulate friction
+            cell.velocity.x *= 0.9;
+            cell.velocity.y *= 0.9;
+        }
+
+        function canMoveTo(cell, fromX, fromY, toX, toY) {
+            // Can't move to the same position
+            if (fromX === toX && fromY === toY) return false;
+            
+            // Can't move to a wall, blocker, or emitter
+            if (grid[toY][toX].type === WALL || grid[toY][toX].type === EMITTER || grid[toY][toX].type === BLOCKER) return false;
+            
+            // If target is empty, we can move
+            if (grid[toY][toX].type === EMPTY) return true;
+            
+            // Density rules for liquids and particles
+            if ((cell.type === SAND || cell.type === WATER || cell.type === OIL) && 
+                (grid[toY][toX].type === SAND || grid[toY][toX].type === WATER || grid[toY][toX].type === OIL)) {
+                
+                // Higher density materials sink below lower density ones
+                return properties[cell.type].density > properties[grid[toY][toX].type].density;
+            }
+            
+            // Special case for smoke - it can rise through liquids
+            if (cell.type === SMOKE && (grid[toY][toX].type === WATER || grid[toY][toX].type === OIL)) {
+                return true;
+            }
+            
+            return false;
+        }
+
+        function moveCell(fromX, fromY, toX, toY) {
+            // Swap cells in the next grid
+            [nextGrid[fromY][fromX], nextGrid[toY][toX]] = [nextGrid[toY][toX], nextGrid[fromY][fromX]];
+            
+            // Adjust velocity for the moved cell
+            if (fromX !== toX) {
+                nextGrid[toY][toX].velocity.x *= properties[grid[fromY][fromX].type].inertia;
+            }
+            if (fromY !== toY) {
+                nextGrid[toY][toX].velocity.y *= properties[grid[fromY][fromX].type].inertia;
+            }
+        }
+
+        function renderGrid() {
+            noStroke();
+            for (let y = 0; y < rows; y++) {
+                for (let x = 0; x < cols; x++) {
+                    const cell = grid[y][x];
+                    
+                    if (cell.type !== EMPTY) {
+                        const baseColor = colors[cell.type];
+                        let displayColor;
+                        
+                        // Add some variation to colors for more realistic look
+                        if (cell.type === FIRE) {
+                            // Fire has yellow and orange variations
+                            const yellowAmount = map(cell.lifetime, 0, properties[FIRE].lifetime, 0, 1);
+                            displayColor = [
+                                baseColor[0], 
+                                baseColor[1] + yellowAmount * 50, 
+                                baseColor[2] * (1 - yellowAmount * 0.5)
+                            ];
+                        } else if (cell.type === SMOKE) {
+                            // Smoke fades out over time
+                            const alpha = map(cell.lifetime, 0, properties[SMOKE].lifetime, 100, 200);
+                            displayColor = [baseColor[0], baseColor[1], baseColor[2], alpha];
+                        } else {
+                            // Add slight random variation to other particles
+                            displayColor = [
+                                baseColor[0] + random(-10, 10),
+                                baseColor[1] + random(-10, 10),
+                                baseColor[2] + random(-10, 10)
+                            ];
+                        }
+                        
+                        fill(displayColor);
+                        rect(x * gridSize, y * gridSize, gridSize, gridSize);
+                    }
+                }
+            }
+        }
+
+        function windowResized() {
+            let canvasWidth = min(windowWidth - 300, 800);
+            let canvasHeight = min(windowHeight - 100, 600);
+            
+            // Resize the canvas
+            resizeCanvas(canvasWidth, canvasHeight);
+            
+            // Ensure the canvas is properly positioned
+            let canvas = document.querySelector('canvas');
+            if (canvas && document.getElementById('canvas-wrapper')) {
+                document.getElementById('canvas-wrapper').appendChild(canvas);
+            }
+            
+            // Recalculate grid dimensions
+            const newCols = floor(width / gridSize);
+            const newRows = floor(height / gridSize);
+            
+            // Create new grids with the new dimensions
+            const newGrid = [];
+            const newNextGrid = [];
+            
+            for (let y = 0; y < newRows; y++) {
+                newGrid[y] = [];
+                newNextGrid[y] = [];
+                for (let x = 0; x < newCols; x++) {
+                    // Copy existing cell data if available
+                    if (y < rows && x < cols) {
+                        newGrid[y][x] = { ...grid[y][x] };
+                        newNextGrid[y][x] = { ...nextGrid[y][x] };
+                    } else {
+                        newGrid[y][x] = {
+                            type: EMPTY,
+                            lifetime: 0,
+                            velocity: { x: 0, y: 0 }
+                        };
+                        newNextGrid[y][x] = {
+                            type: EMPTY,
+                            lifetime: 0,
+                            velocity: { x: 0, y: 0 }
+                        };
+                    }
+                }
+            }
+            
+            // Filter out emitters that are now out of bounds
+            emitters = emitters.filter(e => e.x < newCols && e.y < newRows);
+            
+            // Update grid dimensions and data
+            grid = newGrid;
+            nextGrid = newNextGrid;
+            cols = newCols;
+            rows = newRows;
+        }
+    </script>
+</body>
+</html>

@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>4D Tesseract Cross-Section Visualization</title>
+  <title>4D Tesseract with Edge Cubes, Ground & 45° Spotlight</title>
   <style>
-    /* Basic styling: full-screen canvas on a black background */
+    /* Full-screen canvas with a black background */
     body {
       margin: 0;
       overflow: hidden;
@@ -19,16 +19,51 @@
   <!-- Include Three.js from a CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script>
-    // --- Setup Scene, Camera, Renderer ---
+    // --- Scene, Camera, Renderer Setup ---
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 1000);
-    camera.position.z = 5;
-    
+    const camera = new THREE.PerspectiveCamera(
+      45, window.innerWidth / window.innerHeight, 0.1, 1000
+    );
+    camera.position.set(3, 3, 7);
+    camera.lookAt(0, 0, 0);
+
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     document.body.appendChild(renderer.domElement);
-    
-    // --- Create 4D Tesseract Data ---
+
+    // --- Ground Plane ---
+    const groundGeo = new THREE.PlaneGeometry(20, 20);
+    const groundMat = new THREE.MeshPhongMaterial({ color: 0x555555 });
+    const ground = new THREE.Mesh(groundGeo, groundMat);
+    ground.rotation.x = - Math.PI / 2;
+    // Move the ground plane down a couple of units:
+    ground.position.y = -4;
+    ground.receiveShadow = true;
+    scene.add(ground);
+
+    // --- Lights ---
+    const ambientLight = new THREE.AmbientLight(0x404040, 1.5);
+    scene.add(ambientLight);
+
+    // Position the spotlight so its vector toward the origin makes a 45° angle.
+    // To get a 45° angle relative to horizontal, the vertical component should equal
+    // the horizontal distance. Here we choose (5, ~7.07, 5) so that:
+    //   horizontal = sqrt(5²+5²) = 7.07 and vertical = 7.07.
+    const spotLight = new THREE.SpotLight(0xffffff, 1);
+    spotLight.position.set(5, 7.07, 5);
+    spotLight.castShadow = true;
+    spotLight.shadow.mapSize.width = 1024;
+    spotLight.shadow.mapSize.height = 1024;
+    spotLight.shadow.camera.near = 1;
+    spotLight.shadow.camera.far = 20;
+    // Ensure the spotlight is aimed at the scene center.
+    spotLight.target.position.set(0, 0, 0);
+    scene.add(spotLight);
+    scene.add(spotLight.target);
+
+    // --- 4D Tesseract Data (Vertices & Edges) ---
     // A tesseract has 16 vertices: all combinations of (±1, ±1, ±1, ±1)
     const vertices4D = [];
     const size = 1;
@@ -41,9 +76,7 @@
         }
       }
     }
-    
-    // Define edges by connecting vertices that differ in exactly one coordinate.
-    // (A tesseract has 32 edges.)
+    // Determine the 32 edges (connecting vertices that differ in exactly one coordinate)
     const edges = [];
     for (let i = 0; i < vertices4D.length; i++) {
       for (let j = i + 1; j < vertices4D.length; j++) {
@@ -52,88 +85,111 @@
         if (vertices4D[i].y !== vertices4D[j].y) diff++;
         if (vertices4D[i].z !== vertices4D[j].z) diff++;
         if (vertices4D[i].w !== vertices4D[j].w) diff++;
-        if (diff === 1) {
-          edges.push([i, j]);
-        }
+        if (diff === 1) edges.push([i, j]);
       }
     }
-    
-    // --- Prepare Three.js Geometry ---
-    // We will update the positions every frame.
-    const geometry = new THREE.BufferGeometry();
-    // Each edge has 2 vertices and each vertex has 3 coordinates.
-    const positions = new Float32Array(edges.length * 2 * 3);
-    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    
-    const material = new THREE.LineBasicMaterial({ color: 0xffffff });
-    const lineSegments = new THREE.LineSegments(geometry, material);
-    scene.add(lineSegments);
-    
+
+    // --- Create Cube Meshes for Each Edge ---
+    // Each edge is represented by a narrow box (cuboid) whose length matches the edge
+    // while its cross-section (thickness) remains constant.
+    const edgeCubes = [];
+    const boxGeo = new THREE.BoxGeometry(1, 1, 1); // unit cube; default oriented along Y
+    const boxMat = new THREE.MeshPhongMaterial({ color: 0xffffff });
+    const thickness = 0.05; // constant cross-sectional thickness
+    for (let i = 0; i < edges.length; i++) {
+      const cube = new THREE.Mesh(boxGeo, boxMat);
+      cube.castShadow = true;
+      scene.add(cube);
+      edgeCubes.push(cube);
+    }
+
     // --- 4D Rotation & Projection Functions ---
-    // This function rotates a 4D point in two planes:
-    // - The XW plane (rotating between x and w)
-    // - The YZ plane (rotating between y and z)
+    // Rotate a 4D point in the XW and YZ planes.
     function rotate4D(v, angleXW, angleYZ) {
       let { x, y, z, w } = v;
-      
-      // Rotate in the XW plane
+      // Rotate in the XW plane:
       let cos = Math.cos(angleXW), sin = Math.sin(angleXW);
       let x1 = x * cos + w * sin;
       let w1 = -x * sin + w * cos;
-      x = x1; 
-      w = w1;
-      
-      // Rotate in the YZ plane
-      cos = Math.cos(angleYZ);
-      sin = Math.sin(angleYZ);
+      x = x1; w = w1;
+      // Rotate in the YZ plane:
+      cos = Math.cos(angleYZ); sin = Math.sin(angleYZ);
       let y1 = y * cos - z * sin;
       let z1 = y * sin + z * cos;
-      y = y1;
-      z = z1;
-      
+      y = y1; z = z1;
       return { x, y, z, w };
     }
-    
+
     // --- Animation Loop ---
     let angle = 0;
     function animate() {
       requestAnimationFrame(animate);
       angle += 0.01;  // Update the rotation angle
-      
-      // Rotate each 4D vertex and project it to 3D.
-      // We use a simple perspective projection:
-      //   (x, y, z, w) -> (x, y, z) * (d / (d - w))
-      // where d is the "distance" along the 4th dimension.
+
+      // Rotate each 4D vertex and project to 3D.
+      // Projection: (x, y, z, w) → (x, y, z) scaled by d/(d - w)
       const projected = vertices4D.map(v => {
         const rotated = rotate4D(v, angle, angle * 0.7);
-        const d = 3; // distance parameter for projection
+        const d = 3; // distance parameter for 4D perspective
         const factor = d / (d - rotated.w);
-        return {
-          x: rotated.x * factor,
-          y: rotated.y * factor,
-          z: rotated.z * factor
-        };
+        return new THREE.Vector3(
+          rotated.x * factor,
+          rotated.y * factor,
+          rotated.z * factor
+        );
       });
-      
-      // Update the positions for each edge.
+
+      // For each edge, update the corresponding cube's position, scale, and rotation.
       for (let i = 0; i < edges.length; i++) {
         const [a, b] = edges[i];
         const pa = projected[a];
         const pb = projected[b];
-        positions[6 * i]     = pa.x;
-        positions[6 * i + 1] = pa.y;
-        positions[6 * i + 2] = pa.z;
-        positions[6 * i + 3] = pb.x;
-        positions[6 * i + 4] = pb.y;
-        positions[6 * i + 5] = pb.z;
+
+        // Compute edge vector, its length, and the midpoint.
+        const edgeVec = new THREE.Vector3().subVectors(pb, pa);
+        const length = edgeVec.length();
+        const midpoint = new THREE.Vector3().addVectors(pa, pb).multiplyScalar(0.5);
+
+        // Update the cube's position.
+        const cube = edgeCubes[i];
+        cube.position.copy(midpoint);
+
+        // Scale the cube: length along Y, constant thickness on X and Z.
+        cube.scale.set(thickness, length, thickness);
+
+        // --- Cube Orientation ---
+        // We want the cube's long (Y) axis to align with the edge vector.
+        // Additionally, we fix the cube’s cross-section by aligning its X axis with
+        // the projection of the world X axis (or world Z if world X is nearly parallel)
+        // onto the plane perpendicular to the edge.
+        const edgeDir = edgeVec.clone().normalize();
+
+        // Use world X as the candidate "side" vector.
+        let candidate = new THREE.Vector3(1, 0, 0);
+        if (Math.abs(candidate.dot(edgeDir)) > 0.99) {
+          // If edgeDir is nearly parallel to world X, use world Z.
+          candidate.set(0, 0, 1);
+        }
+        // Project candidate onto the plane perpendicular to edgeDir.
+        let localX = candidate.clone().sub(
+          edgeDir.clone().multiplyScalar(candidate.dot(edgeDir))
+        ).normalize();
+
+        // Create the third axis so that (localX, edgeDir, localZ) form a right-handed basis.
+        let localZ = new THREE.Vector3().crossVectors(localX, edgeDir).normalize();
+
+        // Build a rotation matrix whose columns are: [localX, edgeDir, localZ].
+        const basisMatrix = new THREE.Matrix4();
+        basisMatrix.makeBasis(localX, edgeDir, localZ);
+        const quaternion = new THREE.Quaternion().setFromRotationMatrix(basisMatrix);
+        cube.quaternion.copy(quaternion);
       }
-      geometry.attributes.position.needsUpdate = true;
-      
+
       renderer.render(scene, camera);
     }
     animate();
-    
-    // --- Handle Window Resize ---
+
+    // --- Handle Window Resizing ---
     window.addEventListener('resize', () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
