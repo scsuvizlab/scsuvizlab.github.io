@@ -1,0 +1,2817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Life in 2045 - Node-Based Editor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.26.0/cytoscape.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --background-color: #f9f9f9;
+            --text-color: #333;
+            --border-color: #ddd;
+            --sidebar-width: 280px;
+            --header-height: 60px;
+            --properties-height: 300px;
+            
+            /* Node colors */
+            --fiction-color: #6ecff6;
+            --nonfiction-color: #9370db;
+            --character-color: #20b2aa;
+            --interactive-color: #ba55d3;
+            --world-color: #cd853f;
+            
+            /* Edge colors */
+            --critical-path-color: #ffd700;
+            --character-pov-color: #6ecff6;
+            --branch-point-color: #ff8c00;
+            --concept-sequence-color: #9370db;
+            --related-concept-color: #3cb371;
+            --fiction-nonfiction-color: #ff69b4;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Header */
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .app-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .header-button {
+            background-color: transparent;
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: background-color 0.2s;
+        }
+
+        .header-button:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
+
+        /* Main layout */
+        .main-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: white;
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        /* Content Panel */
+        .content-panel {
+            width: 350px;
+            background-color: white;
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: width 0.3s;
+        }
+        
+        .content-panel.collapsed {
+            width: 0;
+            border: none;
+        }
+        
+        .content-panel-header {
+            padding: 15px;
+            background-color: #f8f8f8;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .content-panel-title {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .content-panel-controls {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .content-panel-section {
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .content-panel-section h3 {
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+        
+        .node-content-text {
+            max-height: 300px;
+            overflow-y: auto;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            white-space: pre-wrap;
+        }
+        
+        .connection-list {
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .connection-item {
+            padding: 8px 10px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .connection-item:hover {
+            background-color: #eaeaea;
+        }
+        
+        .connection-item-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+            flex-shrink: 0;
+        }
+        
+        .character-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        
+        .character-item {
+            padding: 5px 10px;
+            background-color: var(--character-color);
+            color: white;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+        
+        .branch-list {
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .branch-item {
+            padding: 8px 10px;
+            background-color: rgba(255, 140, 0, 0.1);
+            border-left: 3px solid var(--branch-point-color);
+            border-radius: 4px;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+        
+        .branch-item:hover {
+            background-color: rgba(255, 140, 0, 0.2);
+        }
+        
+        .toggle-panel-btn {
+            background: none;
+            border: none;
+            color: #777;
+            cursor: pointer;
+            padding: 5px;
+            transition: color 0.2s;
+        }
+        
+        .toggle-panel-btn:hover {
+            color: var(--primary-color);
+        }
+
+        .sidebar-section {
+            border-bottom: 1px solid var(--border-color);
+            padding: 15px;
+        }
+
+        .sidebar-section h2 {
+            font-size: 1rem;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+
+        .node-types {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .node-type-button {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background-color: #f8f8f8;
+            border: 1px solid var(--border-color);
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .node-type-button:hover {
+            border-color: var(--secondary-color);
+        }
+
+        .node-type-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .fiction-icon {
+            background-color: var(--fiction-color);
+        }
+
+        .nonfiction-icon {
+            background-color: var(--nonfiction-color);
+        }
+
+        .character-icon {
+            background-color: var(--character-color);
+        }
+
+        .interactive-icon {
+            background-color: var(--interactive-color);
+        }
+
+        .world-icon {
+            background-color: var(--world-color);
+        }
+
+        .node-tools {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .tool-button {
+            background-color: #f8f8f8;
+            border: 1px solid var(--border-color);
+            padding: 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .tool-button:hover {
+            border-color: var(--secondary-color);
+            background-color: #f0f0f0;
+        }
+
+        .tool-button.active {
+            background-color: var(--secondary-color);
+            color: white;
+            border-color: var(--secondary-color);
+        }
+
+        /* Connection types */
+        .connection-types {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .connection-type {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 5px 0;
+        }
+
+        .connection-color {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+        }
+
+        .critical-path-color {
+            background-color: var(--critical-path-color);
+        }
+
+        .character-pov-color {
+            background-color: var(--character-pov-color);
+        }
+
+        .branch-point-color {
+            background-color: var(--branch-point-color);
+        }
+
+        .concept-sequence-color {
+            background-color: var(--concept-sequence-color);
+        }
+
+        .related-concept-color {
+            background-color: var(--related-concept-color);
+        }
+
+        .fiction-nonfiction-color {
+            background-color: var(--fiction-nonfiction-color);
+        }
+
+        .connection-label {
+            font-size: 0.9rem;
+        }
+
+        /* Properties panel */
+        .properties-panel {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .properties-panel h2 {
+            font-size: 1rem;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+
+        .properties-panel p {
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            color: #777;
+        }
+
+        .property-group {
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 12px;
+            background-color: #f8f8f8;
+        }
+
+        .property-group h3 {
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            color: var(--primary-color);
+        }
+
+        .property-field {
+            margin-bottom: 10px;
+        }
+
+        .property-field label {
+            display: block;
+            font-size: 0.85rem;
+            margin-bottom: 5px;
+            color: #555;
+        }
+
+        .property-field input, 
+        .property-field select, 
+        .property-field textarea {
+            width: 100%;
+            padding: 6px 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .property-field textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .property-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .property-button {
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .property-button.primary {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+        }
+
+        .property-button.secondary {
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+        }
+
+        /* Graph area */
+        .graph-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #graph {
+            width: 100%;
+            height: 100%;
+            background-color: #fcfcfc;
+        }
+
+        /* Mini toolbar */
+        .graph-toolbar {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background-color: white;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            display: flex;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .graph-tool {
+            padding: 8px 10px;
+            cursor: pointer;
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: white;
+        }
+
+        .graph-tool:last-child {
+            border-right: none;
+        }
+
+        .graph-tool:hover {
+            background-color: #f0f0f0;
+        }
+
+        .graph-tool.active {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        /* Status bar */
+        .status-bar {
+            height: 25px;
+            background-color: #f0f0f0;
+            border-top: 1px solid var(--border-color);
+            padding: 0 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        /* Node editor modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .modal-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: #777;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-footer {
+            padding: 15px 20px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .modal-button {
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .modal-button.primary {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+        }
+
+        .modal-button.secondary {
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+        }
+
+        /* Node editor form */
+        .editor-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-section {
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 15px;
+            background-color: #f9f9f9;
+        }
+
+        .form-section h3 {
+            margin-bottom: 12px;
+            font-size: 1rem;
+            color: var(--primary-color);
+        }
+
+        .form-row {
+            margin-bottom: 15px;
+        }
+
+        .form-row label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+
+        .form-row input,
+        .form-row select,
+        .form-row textarea {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .form-row textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        /* Context menu */
+        .context-menu {
+            position: absolute;
+            background-color: white;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            z-index: 100;
+            min-width: 160px;
+            display: none;
+        }
+
+        .context-menu.active {
+            display: block;
+        }
+
+        .context-menu-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.2s;
+        }
+
+        .context-menu-item:hover {
+            background-color: #f0f0f0;
+        }
+
+        .context-menu-separator {
+            height: 1px;
+            background-color: var(--border-color);
+            margin: 5px 0;
+        }
+
+        .context-menu-item i {
+            margin-right: 8px;
+            width: 16px;
+            text-align: center;
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: absolute;
+            background-color: rgba(0,0,0,0.8);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            pointer-events: none;
+            z-index: 1000;
+            display: none;
+        }
+
+        /* Add connection mode UI */
+        .connection-prompt {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background-color: rgba(52, 152, 219, 0.95);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 4px;
+            display: none;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            z-index: 10;
+        }
+
+        .connection-prompt.active {
+            display: block;
+        }
+
+        .connection-prompt-text {
+            margin-right: 10px;
+        }
+
+        .connection-close {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            opacity: 0.8;
+        }
+
+        .connection-close:hover {
+            opacity: 1;
+        }
+
+        /* Overlay for node loading */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255,255,255,0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            display: none;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--secondary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 1rem;
+            color: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="app-title">Life in 2045 - Scene Editor</div>
+        <div class="header-actions">
+            <button class="header-button" id="home-btn">
+                <i class="fas fa-home"></i> Home
+            </button>
+            <button class="header-button" id="critical-path-btn">
+                <i class="fas fa-project-diagram"></i> Critical Path
+            </button>
+            <button class="header-button" id="reader-btn">
+                <i class="fas fa-book-reader"></i> Reader
+            </button>
+            <button class="header-button" id="new-project-btn">
+                <i class="fas fa-file"></i> New
+            </button>
+            <button class="header-button" id="open-project-btn">
+                <i class="fas fa-folder-open"></i> Open
+            </button>
+            <button class="header-button" id="save-project-btn">
+                <i class="fas fa-save"></i> Save
+            </button>
+            <button class="header-button" id="export-project-btn">
+                <i class="fas fa-file-export"></i> Export
+            </button>
+        </div>
+    </header>
+
+    <!-- Main container -->
+    <div class="main-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <!-- Node types -->
+            <div class="sidebar-section">
+                <h2>Node Types</h2>
+                <div class="node-types">
+                    <div class="node-type-button" data-node-type="fiction">
+                        <div class="node-type-icon fiction-icon">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <span>Fiction Node</span>
+                    </div>
+                    <div class="node-type-button" data-node-type="nonfiction">
+                        <div class="node-type-icon nonfiction-icon">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <span>Non-Fiction Node</span>
+                    </div>
+                    <div class="node-type-button" data-node-type="character">
+                        <div class="node-type-icon character-icon">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <span>Character Profile</span>
+                    </div>
+                    <div class="node-type-button" data-node-type="interactive">
+                        <div class="node-type-icon interactive-icon">
+                            <i class="fas fa-gamepad"></i>
+                        </div>
+                        <span>Interactive Element</span>
+                    </div>
+                    <div class="node-type-button" data-node-type="world">
+                        <div class="node-type-icon world-icon">
+                            <i class="fas fa-globe"></i>
+                        </div>
+                        <span>World Entity</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tools -->
+            <div class="sidebar-section">
+                <h2>Tools</h2>
+                <div class="node-tools">
+                    <div class="tool-button active" id="select-tool" title="Select">
+                        <i class="fas fa-mouse-pointer"></i>
+                    </div>
+                    <div class="tool-button" id="connect-tool" title="Connect Nodes">
+                        <i class="fas fa-link"></i>
+                    </div>
+                    <div class="tool-button" id="pan-tool" title="Pan">
+                        <i class="fas fa-hand-paper"></i>
+                    </div>
+                    <div class="tool-button" id="group-tool" title="Group Nodes">
+                        <i class="fas fa-object-group"></i>
+                    </div>
+                    <div class="tool-button" id="note-tool" title="Add Note">
+                        <i class="fas fa-sticky-note"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Connection types -->
+            <div class="sidebar-section">
+                <h2>Connection Types</h2>
+                <div class="connection-types">
+                    <div class="connection-type" data-connection-type="critical-path">
+                        <div class="connection-color critical-path-color"></div>
+                        <span class="connection-label">Critical Path</span>
+                    </div>
+                    <div class="connection-type" data-connection-type="character-pov">
+                        <div class="connection-color character-pov-color"></div>
+                        <span class="connection-label">Character POV</span>
+                    </div>
+                    <div class="connection-type" data-connection-type="branch-point">
+                        <div class="connection-color branch-point-color"></div>
+                        <span class="connection-label">Branch Point</span>
+                    </div>
+                    <div class="connection-type" data-connection-type="concept-sequence">
+                        <div class="connection-color concept-sequence-color"></div>
+                        <span class="connection-label">Concept Sequence</span>
+                    </div>
+                    <div class="connection-type" data-connection-type="related-concept">
+                        <div class="connection-color related-concept-color"></div>
+                        <span class="connection-label">Related Concept</span>
+                    </div>
+                    <div class="connection-type" data-connection-type="fiction-nonfiction">
+                        <div class="connection-color fiction-nonfiction-color"></div>
+                        <span class="connection-label">Fiction-Nonfiction Link</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Properties Panel -->
+            <div class="properties-panel">
+                <h2>Properties</h2>
+                <p id="no-selection-message">Select a node or connection to view properties</p>
+                
+                <!-- Node properties (hidden by default) -->
+                <div id="node-properties" style="display: none;">
+                    <div class="property-group">
+                        <h3>Node Information</h3>
+                        <div class="property-field">
+                            <label for="node-id">Node ID</label>
+                            <input type="text" id="node-id" placeholder="e.g., ch1-scene1-classroom">
+                        </div>
+                        <div class="property-field">
+                            <label for="node-title">Title</label>
+                            <input type="text" id="node-title" placeholder="Node Title">
+                        </div>
+                    </div>
+                    
+                    <div class="property-group">
+                        <h3>Content</h3>
+                        <div class="property-field">
+                            <label for="node-description">Description</label>
+                            <textarea id="node-description" placeholder="Brief description of this node"></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="property-actions">
+                        <button class="property-button secondary" id="node-delete-btn">Delete</button>
+                        <button class="property-button primary" id="node-edit-btn">Edit</button>
+                    </div>
+                </div>
+                
+                <!-- Edge properties (hidden by default) -->
+                <div id="edge-properties" style="display: none;">
+                    <div class="property-group">
+                        <h3>Connection Information</h3>
+                        <div class="property-field">
+                            <label for="edge-type">Connection Type</label>
+                            <select id="edge-type">
+                                <option value="critical-path">Critical Path</option>
+                                <option value="character-pov">Character POV</option>
+                                <option value="branch-point">Branch Point</option>
+                                <option value="concept-sequence">Concept Sequence</option>
+                                <option value="related-concept">Related Concept</option>
+                                <option value="fiction-nonfiction">Fiction-Nonfiction Link</option>
+                            </select>
+                        </div>
+                        <div class="property-field">
+                            <label for="edge-label">Label (Optional)</label>
+                            <input type="text" id="edge-label" placeholder="e.g., Next chapter">
+                        </div>
+                    </div>
+                    
+                    <div class="property-actions">
+                        <button class="property-button secondary" id="edge-delete-btn">Delete</button>
+                        <button class="property-button primary" id="edge-update-btn">Update</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Content Panel -->
+        <div class="content-panel" id="content-panel">
+            <div class="content-panel-header">
+                <div class="content-panel-title" id="content-panel-title">Node Content</div>
+                <div class="content-panel-controls">
+                    <button class="toggle-panel-btn" id="toggle-panel-btn" title="Toggle panel">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Node Text Content -->
+            <div class="content-panel-section">
+                <h3>Content</h3>
+                <div class="node-content-text" id="node-content-text">
+                    Select a node to view its content
+                </div>
+            </div>
+            
+            <!-- Characters -->
+            <div class="content-panel-section" id="characters-section">
+                <h3>Characters</h3>
+                <div class="character-list" id="character-list">
+                    <!-- Characters will be inserted here -->
+                </div>
+            </div>
+            
+            <!-- Branch Points -->
+            <div class="content-panel-section" id="branches-section">
+                <h3>Branch Points</h3>
+                <div class="branch-list" id="branch-list">
+                    <!-- Branch points will be inserted here -->
+                </div>
+            </div>
+            
+            <!-- Connections -->
+            <div class="content-panel-section">
+                <h3>Connections</h3>
+                <div class="connection-list" id="outgoing-connections">
+                    <!-- Connections will be inserted here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Graph area -->
+        <div class="graph-container">
+            <div id="graph"></div>
+            
+            <!-- Graph toolbar -->
+            <div class="graph-toolbar">
+                <div class="graph-tool" id="zoom-in-tool" title="Zoom In">
+                    <i class="fas fa-search-plus"></i>
+                </div>
+                <div class="graph-tool" id="zoom-out-tool" title="Zoom Out">
+                    <i class="fas fa-search-minus"></i>
+                </div>
+                <div class="graph-tool" id="zoom-fit-tool" title="Fit to View">
+                    <i class="fas fa-expand"></i>
+                </div>
+                <div class="graph-tool" id="grid-toggle-tool" title="Toggle Grid">
+                    <i class="fas fa-th"></i>
+                </div>
+            </div>
+            
+            <!-- Connection prompt -->
+            <div class="connection-prompt" id="connection-prompt">
+                <span class="connection-prompt-text">Select target node to create connection</span>
+                <button class="connection-close" id="cancel-connection">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status bar -->
+    <div class="status-bar">
+        <div class="status-info" id="status-info">Ready</div>
+        <div class="status-nodes" id="status-nodes">Nodes: 0</div>
+    </div>
+
+    <!-- Node editor modal -->
+    <div class="modal" id="node-editor-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="modal-title">Edit Node</div>
+                <button class="modal-close" id="close-modal">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="editor-form" id="fiction-form">
+                    <div class="form-section">
+                        <h3>Basic Information</h3>
+                        <div class="form-row">
+                            <label for="fiction-id">Node ID</label>
+                            <input type="text" id="fiction-id" placeholder="e.g., ch1-scene1-classroom">
+                        </div>
+                        <div class="form-row">
+                            <label for="fiction-title">Title</label>
+                            <input type="text" id="fiction-title" placeholder="Scene Title">
+                        </div>
+                        <div class="form-row">
+                            <label for="fiction-pov">POV Character</label>
+                            <input type="text" id="fiction-pov" placeholder="e.g., Alec">
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h3>Content</h3>
+                        <div class="form-row">
+                            <label for="fiction-content">Scene Text</label>
+                            <textarea id="fiction-content" placeholder="The scene content..."></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h3>Metadata</h3>
+                        <div class="form-row">
+                            <label for="fiction-location">Location</label>
+                            <input type="text" id="fiction-location" placeholder="e.g., Zach's Restaurant, Atlanta">
+                        </div>
+                        <div class="form-row">
+                            <label for="fiction-timeline">Timeline</label>
+                            <input type="text" id="fiction-timeline" placeholder="e.g., 2045-Evening">
+                        </div>
+                        <div class="form-row">
+                            <label for="fiction-tags">Thematic Tags (comma separated)</label>
+                            <input type="text" id="fiction-tags" placeholder="e.g., human craftsmanship, family tension">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="editor-form" id="nonfiction-form" style="display: none;">
+                    <div class="form-section">
+                        <h3>Basic Information</h3>
+                        <div class="form-row">
+                            <label for="nonfiction-id">Node ID</label>
+                            <input type="text" id="nonfiction-id" placeholder="e.g., nf-what-is-ai">
+                        </div>
+                        <div class="form-row">
+                            <label for="nonfiction-title">Title</label>
+                            <input type="text" id="nonfiction-title" placeholder="Concept Title">
+                        </div>
+                        <div class="form-row">
+                            <label for="nonfiction-complexity">Complexity Level</label>
+                            <select id="nonfiction-complexity">
+                                <option value="basic">Basic</option>
+                                <option value="intermediate">Intermediate</option>
+                                <option value="advanced">Advanced</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h3>Content</h3>
+                        <div class="form-row">
+                            <label for="nonfiction-content">Educational Content</label>
+                            <textarea id="nonfiction-content" placeholder="The educational content..."></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h3>Metadata</h3>
+                        <div class="form-row">
+                            <label for="nonfiction-tags">Thematic Tags (comma separated)</label>
+                            <input type="text" id="nonfiction-tags" placeholder="e.g., ai-fundamentals, definitions">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="editor-form" id="character-form" style="display: none;">
+                    <div class="form-section">
+                        <h3>Basic Information</h3>
+                        <div class="form-row">
+                            <label for="character-id">Character ID</label>
+                            <input type="text" id="character-id" placeholder="e.g., alec">
+                        </div>
+                        <div class="form-row">
+                            <label for="character-name">Full Name</label>
+                            <input type="text" id="character-name" placeholder="Character's full name">
+                        </div>
+                        <div class="form-row">
+                            <label for="character-type">Character Type</label>
+                            <select id="character-type">
+                                <option value="primary">Primary</option>
+                                <option value="secondary">Secondary</option>
+                                <option value="incidental">Incidental</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h3>Details</h3>
+                        <div class="form-row">
+                            <label for="character-appearance">Appearance</label>
+                            <textarea id="character-appearance" placeholder="Physical description..."></textarea>
+                        </div>
+                        <div class="form-row">
+                            <label for="character-personality">Personality</label>
+                            <textarea id="character-personality" placeholder="Personality traits..."></textarea>
+                        </div>
+                        <div class="form-row">
+                            <label for="character-background">Background</label>
+                            <textarea id="character-background" placeholder="Character history and background..."></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h3>Voice & AI Generation</h3>
+                        <div class="form-row">
+                            <label for="character-speech">Speech Pattern</label>
+                            <textarea id="character-speech" placeholder="Distinctive speech patterns..."></textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="editor-form" id="interactive-form" style="display: none;">
+                    <div class="form-section">
+                        <h3>Basic Information</h3>
+                        <div class="form-row">
+                            <label for="interactive-id">Node ID</label>
+                            <input type="text" id="interactive-id" placeholder="e.g., interactive-neural-network-builder">
+                        </div>
+                        <div class="form-row">
+                            <label for="interactive-title">Title</label>
+                            <input type="text" id="interactive-title" placeholder="Interactive Element Title">
+                        </div>
+                        <div class="form-row">
+                            <label for="interactive-type">Component Type</label>
+                            <select id="interactive-type">
+                                <option value="simulation">Simulation</option>
+                                <option value="quiz">Quiz</option>
+                                <option value="visualization">Visualization</option>
+                                <option value="exercise">Exercise</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h3>Content</h3>
+                        <div class="form-row">
+                            <label for="interactive-description">Description</label>
+                            <textarea id="interactive-description" placeholder="Description of this interactive element..."></textarea>
+                        </div>
+                        <div class="form-row">
+                            <label for="interactive-instructions">Instructions</label>
+                            <textarea id="interactive-instructions" placeholder="Instructions for the user..."></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h3>Educational Objectives</h3>
+                        <div class="form-row">
+                            <label for="interactive-objectives">Learning Objectives (one per line)</label>
+                            <textarea id="interactive-objectives" placeholder="- Understand X&#10;- Experience Y&#10;- Learn Z"></textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="editor-form" id="world-form" style="display: none;">
+                    <div class="form-section">
+                        <h3>Basic Information</h3>
+                        <div class="form-row">
+                            <label for="world-id">Entity ID</label>
+                            <input type="text" id="world-id" placeholder="e.g., zachs-restaurant">
+                        </div>
+                        <div class="form-row">
+                            <label for="world-name">Name</label>
+                            <input type="text" id="world-name" placeholder="Entity Name">
+                        </div>
+                        <div class="form-row">
+                            <label for="world-type">Entity Type</label>
+                            <select id="world-type">
+                                <option value="location">Location</option>
+                                <option value="technology">Technology</option>
+                                <option value="organization">Organization</option>
+                                <option value="event">Event</option>
+                                <option value="concept">Concept</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h3>Description</h3>
+                        <div class="form-row">
+                            <label for="world-description">Description</label>
+                            <textarea id="world-description" placeholder="Detailed description of this entity..."></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h3>Details</h3>
+                        <div class="form-row">
+                            <label for="world-visual">Visual Attributes (one per line)</label>
+                            <textarea id="world-visual" placeholder="- Attribute 1&#10;- Attribute 2"></textarea>
+                        </div>
+                        <div class="form-row">
+                            <label for="world-historical">Historical Context</label>
+                            <textarea id="world-historical" placeholder="Historical background of this entity..."></textarea>
+                        </div>
+                        <div class="form-row">
+                            <label for="world-significance">Cultural Significance</label>
+                            <textarea id="world-significance" placeholder="Cultural impact and significance..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-button secondary" id="cancel-node-edit">Cancel</button>
+                <button class="modal-button primary" id="save-node-edit">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Context menu -->
+    <div class="context-menu" id="context-menu">
+        <div class="context-menu-item" id="context-edit">
+            <i class="fas fa-edit"></i> Edit
+        </div>
+        <div class="context-menu-item" id="context-connect">
+            <i class="fas fa-link"></i> Connect
+        </div>
+        <div class="context-menu-separator"></div>
+        <div class="context-menu-item" id="context-copy">
+            <i class="fas fa-copy"></i> Copy
+        </div>
+        <div class="context-menu-item" id="context-duplicate">
+            <i class="fas fa-clone"></i> Duplicate
+        </div>
+        <div class="context-menu-separator"></div>
+        <div class="context-menu-item" id="context-delete">
+            <i class="fas fa-trash"></i> Delete
+        </div>
+    </div>
+
+    <!-- Tooltip -->
+    <div class="tooltip" id="tooltip"></div>
+
+    <!-- Loading overlay -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="spinner"></div>
+        <div class="loading-text">Loading project...</div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Node type definitions with styling
+            const nodeTypes = {
+                fiction: {
+                    shape: 'round-rectangle',
+                    backgroundColor: '#6ecff6',
+                    borderColor: '#5aa8e6',
+                    borderWidth: 2,
+                    width: 180,
+                    height: 40,
+                    icon: 'fas fa-book'
+                },
+                nonfiction: {
+                    shape: 'round-rectangle',
+                    backgroundColor: '#9370db',
+                    borderColor: '#8a65d0',
+                    borderWidth: 2,
+                    width: 180,
+                    height: 40,
+                    icon: 'fas fa-brain'
+                },
+                character: {
+                    shape: 'ellipse',
+                    backgroundColor: '#20b2aa',
+                    borderColor: '#1b9690',
+                    borderWidth: 2,
+                    width: 160,
+                    height: 40,
+                    icon: 'fas fa-user'
+                },
+                interactive: {
+                    shape: 'round-pentagon',
+                    backgroundColor: '#ba55d3',
+                    borderColor: '#a94bc2',
+                    borderWidth: 2,
+                    width: 180,
+                    height: 45,
+                    icon: 'fas fa-gamepad'
+                },
+                world: {
+                    shape: 'diamond',
+                    backgroundColor: '#cd853f',
+                    borderColor: '#b0742e',
+                    borderWidth: 2,
+                    width: 160,
+                    height: 40,
+                    icon: 'fas fa-globe'
+                }
+            };
+            
+            // Edge type definitions with styling
+            const edgeTypes = {
+                'critical-path': {
+                    color: '#ffd700',
+                    width: 3,
+                    lineStyle: 'solid',
+                    targetArrowShape: 'triangle',
+                    curveStyle: 'bezier'
+                },
+                'character-pov': {
+                    color: '#6ecff6',
+                    width: 2,
+                    lineStyle: 'dashed',
+                    targetArrowShape: 'triangle',
+                    curveStyle: 'bezier'
+                },
+                'branch-point': {
+                    color: '#ff8c00',
+                    width: 2,
+                    lineStyle: 'solid',
+                    targetArrowShape: 'triangle',
+                    curveStyle: 'bezier'
+                },
+                'concept-sequence': {
+                    color: '#9370db',
+                    width: 3,
+                    lineStyle: 'solid',
+                    targetArrowShape: 'triangle',
+                    curveStyle: 'bezier'
+                },
+                'related-concept': {
+                    color: '#3cb371',
+                    width: 2,
+                    lineStyle: 'dashed',
+                    targetArrowShape: 'triangle',
+                    curveStyle: 'bezier'
+                },
+                'fiction-nonfiction': {
+                    color: '#ff69b4',
+                    width: 2,
+                    lineStyle: 'dotted',
+                    targetArrowShape: 'triangle',
+                    curveStyle: 'bezier'
+                }
+            };
+            
+            // Initialize the graph
+            const cy = cytoscape({
+                container: document.getElementById('graph'),
+                style: [
+                    // Node styling
+                    {
+                        selector: 'node',
+                        style: {
+                            'background-color': 'data(backgroundColor)',
+                            'border-color': 'data(borderColor)',
+                            'border-width': 'data(borderWidth)',
+                            'width': 'data(width)',
+                            'height': 'data(height)',
+                            'shape': 'data(shape)',
+                            'label': 'data(label)',
+                            'text-valign': 'center',
+                            'text-halign': 'center',
+                            'font-size': '12px',
+                            'color': '#fff',
+                            'text-outline-width': 1,
+                            'text-outline-color': 'data(borderColor)',
+                            'text-wrap': 'ellipsis',
+                            'text-max-width': '170px'
+                        }
+                    },
+                    // Edge styling
+                    {
+                        selector: 'edge',
+                        style: {
+                            'width': 'data(width)',
+                            'line-color': 'data(color)',
+                            'target-arrow-color': 'data(color)',
+                            'target-arrow-shape': 'data(arrowShape)',
+                            'curve-style': 'data(curveStyle)',
+                            'line-style': 'data(lineStyle)',
+                            'label': 'data(label)',
+                            'font-size': '10px',
+                            'text-rotation': 'autorotate',
+                            'text-margin-y': '-10px',
+                            'text-background-color': '#fff',
+                            'text-background-opacity': 0.7,
+                            'text-background-padding': '2px'
+                        }
+                    },
+                    // Selected elements
+                    {
+                        selector: ':selected',
+                        style: {
+                            'border-width': 3,
+                            'border-color': '#e74c3c',
+                            'border-style': 'solid',
+                            'line-color': '#e74c3c',
+                            'target-arrow-color': '#e74c3c'
+                        }
+                    }
+                ],
+                layout: {
+                    name: 'grid',
+                    rows: 3
+                },
+                wheelSensitivity: 0.3
+            });
+            
+            // Track current state
+            let currentTool = 'select';
+            let selectedConnectionType = 'critical-path';
+            let sourceNode = null;
+            let currentModalNodeType = null;
+            let editingNodeId = null;
+            let nodeCounter = 0;
+            
+            // DOM Elements
+            const nodePropertiesPanel = document.getElementById('node-properties');
+            const edgePropertiesPanel = document.getElementById('edge-properties');
+            const noSelectionMessage = document.getElementById('no-selection-message');
+            const statusInfo = document.getElementById('status-info');
+            const statusNodes = document.getElementById('status-nodes');
+            const nodeEditorModal = document.getElementById('node-editor-modal');
+            const modalTitle = document.getElementById('modal-title');
+            const contextMenu = document.getElementById('context-menu');
+            const tooltip = document.getElementById('tooltip');
+            const connectionPrompt = document.getElementById('connection-prompt');
+            
+            // Forms
+            const forms = {
+                fiction: document.getElementById('fiction-form'),
+                nonfiction: document.getElementById('nonfiction-form'),
+                character: document.getElementById('character-form'),
+                interactive: document.getElementById('interactive-form'),
+                world: document.getElementById('world-form')
+            };
+            
+            // Initialize with sample nodes for visual reference
+            initSampleGraph();
+            
+            // Initialize content panel toggle button
+            document.getElementById('toggle-panel-btn').addEventListener('click', function() {
+                const contentPanel = document.getElementById('content-panel');
+                const icon = this.querySelector('i');
+                
+                if (contentPanel.classList.contains('collapsed')) {
+                    contentPanel.classList.remove('collapsed');
+                    icon.classList.remove('fa-chevron-right');
+                    icon.classList.add('fa-chevron-left');
+                } else {
+                    contentPanel.classList.add('collapsed');
+                    icon.classList.remove('fa-chevron-left');
+                    icon.classList.add('fa-chevron-right');
+                }
+            });
+            
+            // Tool button click event
+            document.querySelectorAll('.tool-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    document.querySelectorAll('.tool-button').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    currentTool = this.id.replace('-tool', '');
+                    
+                    if (currentTool === 'connect') {
+                        statusInfo.textContent = 'Select source node to create connection';
+                        cy.elements().unselect();
+                    } else {
+                        statusInfo.textContent = 'Ready';
+                    }
+                });
+            });
+            
+            // Node type button click event
+            document.querySelectorAll('.node-type-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    const nodeType = this.getAttribute('data-node-type');
+                    createNode(nodeType);
+                });
+            });
+            
+            // Connection type selection
+            document.querySelectorAll('.connection-type').forEach(conn => {
+                conn.addEventListener('click', function() {
+                    selectedConnectionType = this.getAttribute('data-connection-type');
+                    statusInfo.textContent = `Selected connection type: ${selectedConnectionType}`;
+                });
+            });
+            
+            // Cancel connection button
+            document.getElementById('cancel-connection').addEventListener('click', function() {
+                cancelConnection();
+            });
+            
+            // Graph toolbar buttons
+            document.getElementById('zoom-in-tool').addEventListener('click', function() {
+                cy.zoom({
+                    level: cy.zoom() * 1.2,
+                    renderedPosition: { x: cy.width() / 2, y: cy.height() / 2 }
+                });
+            });
+            
+            document.getElementById('zoom-out-tool').addEventListener('click', function() {
+                cy.zoom({
+                    level: cy.zoom() * 0.8,
+                    renderedPosition: { x: cy.width() / 2, y: cy.height() / 2 }
+                });
+            });
+            
+            document.getElementById('zoom-fit-tool').addEventListener('click', function() {
+                cy.fit();
+            });
+            
+            document.getElementById('grid-toggle-tool').addEventListener('click', function() {
+                this.classList.toggle('active');
+                // Toggle grid implementation would go here
+            });
+            
+            // Modal buttons
+            document.getElementById('close-modal').addEventListener('click', function() {
+                nodeEditorModal.classList.remove('active');
+            });
+            
+            document.getElementById('cancel-node-edit').addEventListener('click', function() {
+                nodeEditorModal.classList.remove('active');
+            });
+            
+            document.getElementById('save-node-edit').addEventListener('click', function() {
+                saveNodeEdit();
+            });
+            
+            // Properties panel buttons
+            document.getElementById('node-edit-btn').addEventListener('click', function() {
+                const selectedNode = cy.$('node:selected');
+                if (selectedNode.length > 0) {
+                    openNodeEditor(selectedNode[0]);
+                }
+            });
+            
+            document.getElementById('node-delete-btn').addEventListener('click', function() {
+                const selectedNode = cy.$('node:selected');
+                if (selectedNode.length > 0) {
+                    if (confirm('Are you sure you want to delete this node?')) {
+                        deleteNode(selectedNode[0]);
+                    }
+                }
+            });
+            
+            document.getElementById('edge-update-btn').addEventListener('click', function() {
+                updateEdgeProperties();
+            });
+            
+            document.getElementById('edge-delete-btn').addEventListener('click', function() {
+                const selectedEdge = cy.$('edge:selected');
+                if (selectedEdge.length > 0) {
+                    if (confirm('Are you sure you want to delete this connection?')) {
+                        deleteEdge(selectedEdge[0]);
+                    }
+                }
+            });
+            
+            // Context menu items
+            document.getElementById('context-edit').addEventListener('click', function() {
+                const selectedNode = cy.$('node:selected');
+                if (selectedNode.length > 0) {
+                    openNodeEditor(selectedNode[0]);
+                }
+                hideContextMenu();
+            });
+            
+            document.getElementById('context-connect').addEventListener('click', function() {
+                const selectedNode = cy.$('node:selected');
+                if (selectedNode.length > 0) {
+                    startConnection(selectedNode[0]);
+                }
+                hideContextMenu();
+            });
+            
+            document.getElementById('context-copy').addEventListener('click', function() {
+                // Implement copy functionality
+                hideContextMenu();
+            });
+            
+            document.getElementById('context-duplicate').addEventListener('click', function() {
+                const selectedNode = cy.$('node:selected');
+                if (selectedNode.length > 0) {
+                    duplicateNode(selectedNode[0]);
+                }
+                hideContextMenu();
+            });
+            
+            document.getElementById('context-delete').addEventListener('click', function() {
+                const selectedElements = cy.$(':selected');
+                if (selectedElements.length > 0) {
+                    if (confirm('Are you sure you want to delete the selected items?')) {
+                        selectedElements.remove();
+                        updateGraphStats();
+                    }
+                }
+                hideContextMenu();
+            });
+            
+            // Save/open project buttons
+            document.getElementById('save-project-btn').addEventListener('click', function() {
+                saveProject();
+            });
+            
+            document.getElementById('open-project-btn').addEventListener('click', function() {
+                document.createElement('input').click();
+                // This would trigger a file input in a full implementation
+                alert('In a full implementation, this would open a project file dialog.');
+            });
+            
+            document.getElementById('new-project-btn').addEventListener('click', function() {
+                if (confirm('Start a new project? Unsaved changes will be lost.')) {
+                    cy.elements().remove();
+                    updateGraphStats();
+                }
+            });
+            
+            document.getElementById('export-project-btn').addEventListener('click', function() {
+                exportProject();
+            });
+            
+            // Cytoscape events
+            cy.on('tap', function(event) {
+                if (event.target === cy) {
+                    // Clicked on background
+                    cy.elements().unselect();
+                    hideProperties();
+                    hideContextMenu();
+                }
+            });
+            
+            cy.on('tap', 'node', function(event) {
+                const node = event.target;
+                
+                if (currentTool === 'connect') {
+                    if (sourceNode === null) {
+                        startConnection(node);
+                    } else {
+                        completeConnection(node);
+                    }
+                    return;
+                }
+                
+                // Otherwise, select the node and show properties
+                cy.elements().unselect();
+                node.select();
+                showNodeProperties(node);
+            });
+            
+            cy.on('tap', 'edge', function(event) {
+                const edge = event.target;
+                cy.elements().unselect();
+                edge.select();
+                showEdgeProperties(edge);
+            });
+            
+            cy.on('cxttap', 'node', function(event) {
+                const node = event.target;
+                cy.elements().unselect();
+                node.select();
+                
+                // Show context menu
+                showContextMenu(event.renderedPosition, 'node');
+            });
+            
+            cy.on('cxttap', 'edge', function(event) {
+                const edge = event.target;
+                cy.elements().unselect();
+                edge.select();
+                
+                // Show context menu
+                showContextMenu(event.renderedPosition, 'edge');
+            });
+            
+            cy.on('mouseover', 'node', function(event) {
+                const node = event.target;
+                showTooltip(event.renderedPosition, node.data('fullTitle') || node.data('label'));
+            });
+            
+            cy.on('mouseout', 'node', function() {
+                hideTooltip();
+            });
+            
+            // Functions
+            
+            // Create a new node
+            function createNode(nodeType) {
+                nodeCounter++;
+                const nodeId = `${nodeType}-${nodeCounter}`;
+                const nodeTitle = getDefaultNodeTitle(nodeType, nodeCounter);
+                
+                const nodeStyle = nodeTypes[nodeType];
+                
+                cy.add({
+                    group: 'nodes',
+                    data: {
+                        id: nodeId,
+                        label: nodeTitle,
+                        fullTitle: nodeTitle,
+                        nodeType: nodeType,
+                        // Style properties
+                        backgroundColor: nodeStyle.backgroundColor,
+                        borderColor: nodeStyle.borderColor,
+                        borderWidth: nodeStyle.borderWidth,
+                        shape: nodeStyle.shape,
+                        width: nodeStyle.width,
+                        height: nodeStyle.height
+                    },
+                    position: {
+                        x: 100 + Math.random() * (cy.width() - 200),
+                        y: 100 + Math.random() * (cy.height() - 200)
+                    }
+                });
+                
+                updateGraphStats();
+                statusInfo.textContent = `Created new ${nodeType} node`;
+            }
+            
+            // Initialize with sample nodes to showcase functionality
+            function initSampleGraph() {
+                // Sample nodes
+                const nodes = [
+                    {
+                        id: 'ch1-scene1-restaurant',
+                        label: 'Ch1: Restaurant Scene',
+                        nodeType: 'fiction',
+                        position: { x: 300, y: 200 },
+                        content: "The restaurant was an island of warmth in a world of machine precision. Zach had designed it that way, from the antique brass fixtures to the mismatched wooden tables, each marked with years of stories. A deliberate contrast to the sterile, algorithmically optimized eateries outside, where AI chefs prepared nutritionally perfect meals with mechanical consistency. Here, the food had character. Here, it was made by human hands.\n\nAtlanta in 2045 was a city of seamless automation, a shining testament to the last two decades of societal upheaval and reconstruction. The economic collapse of the 2030s had forced a radical rethinking of governance and economy. Money was still in use, but its influence was waning.",
+                        characters: ['Zach', 'Nicole', 'Steve', 'Alec', 'Rhett'],
+                        branchPoints: [
+                            {text: "Rhett, the server, approached their table with the first dish, a lacquered wooden tray bearing four plates."},
+                            {text: "Nicole sighed, finally lowering her display"}
+                        ],
+                        description: "Opening scene showing family dynamics in Zach's restaurant",
+                        location: "Zach's Place, Atlanta",
+                        timeline: "2045-evening-before-restaurant-opening",
+                        tags: ["human craftsmanship", "technological alienation", "family tension"]
+                    },
+                    {
+                        id: 'ch1-scene1-nicole-pov',
+                        label: 'Nicole\'s POV',
+                        nodeType: 'fiction',
+                        position: { x: 500, y: 100 },
+                        content: "Nicole barely glanced up from the translucent display hovering over her wrist as the server placed the elaborately plated food before her. The interface pulsed gently with incoming data—project updates from her governance team, simulations running in the background, a brief from Trudy about the latest integration challenges. In a world where information was constant, her personal AI had already filtered what was most relevant, allowing her mind to stay partially engaged with the dinner unfolding before her.",
+                        povCharacter: "Nicole",
+                        description: "The restaurant scene from Nicole's perspective",
+                        location: "Zach's Place, Atlanta",
+                        timeline: "2045-evening-before-restaurant-opening"
+                    },
+                    {
+                        id: 'ch1-scene1-alec-pov',
+                        label: 'Alec\'s POV',
+                        nodeType: 'fiction',
+                        position: { x: 500, y: 200 }
+                    },
+                    {
+                        id: 'ch1-scene1-steve-pov',
+                        label: 'Steve\'s POV',
+                        nodeType: 'fiction',
+                        position: { x: 500, y: 300 }
+                    },
+                    {
+                        id: 'ch1-scene2-alec-bedroom',
+                        label: 'Ch1: Alec\'s Bedroom',
+                        nodeType: 'fiction',
+                        position: { x: 700, y: 200 }
+                    },
+                    {
+                        id: 'nf-what-is-ai',
+                        label: 'What is AI?',
+                        nodeType: 'nonfiction',
+                        position: { x: 300, y: 400 },
+                        content: "Artificial Intelligence (AI) refers to computational systems designed to perform tasks that typically require human intelligence. These systems can learn from data, recognize patterns, make decisions, and improve over time without explicit programming for each task.\n\nIn 2045, AI has evolved beyond simple machine learning to become an integrated governance system that manages resources, makes policy decisions, and coordinates social services with unprecedented efficiency.",
+                        complexity: "basic",
+                        description: "Foundational explanation of AI concepts and their societal impact",
+                        tags: ["ai-fundamentals", "definitions", "misconceptions"]
+                    },
+                    {
+                        id: 'character-nicole',
+                        label: 'Nicole',
+                        nodeType: 'character',
+                        position: { x: 150, y: 100 },
+                        appearance: "40s, professional, often interacting with holographic displays",
+                        personality: "Logical, driven, visionary, efficiency-oriented",
+                        background: "Lead AI Architect responsible for designing the governance system that runs the city",
+                        speechPattern: "Precise, analytical, occasionally uses technical terminology",
+                        characterType: "primary"
+                    },
+                    {
+                        id: 'character-alec',
+                        label: 'Alec',
+                        nodeType: 'character',
+                        position: { x: 150, y: 200 }
+                    },
+                    {
+                        id: 'character-steve',
+                        label: 'Steve',
+                        nodeType: 'character',
+                        position: { x: 150, y: 300 }
+                    },
+                    {
+                        id: 'interactive-ai-quiz',
+                        label: 'AI Concepts Quiz',
+                        nodeType: 'interactive',
+                        position: { x: 500, y: 400 }
+                    },
+                    {
+                        id: 'zachs-restaurant',
+                        label: 'Zach\'s Restaurant',
+                        nodeType: 'world',
+                        position: { x: 300, y: 100 },
+                        description: "A deliberately analog restaurant featuring human-made food in a world of AI-optimized dining",
+                        entityType: "location",
+                        visualAttributes: [
+                            "Antique brass fixtures",
+                            "Mismatched wooden tables with visible wear",
+                            "Warm lighting from actual filament bulbs",
+                            "Hand-written menus on real paper"
+                        ],
+                        historicalContext: "Founded in 2042 as a reaction to the complete automation of most dining establishments",
+                        culturalSignificance: "Represents the growing 'human-made' movement that values imperfection and craft over efficiency"
+                    }
+                ];
+                
+                // Add nodes with styling
+                nodes.forEach(node => {
+                    const nodeStyle = nodeTypes[node.nodeType];
+                    
+                    cy.add({
+                        group: 'nodes',
+                        data: {
+                            id: node.id,
+                            label: node.label,
+                            fullTitle: node.label,
+                            nodeType: node.nodeType,
+                            // Style properties
+                            backgroundColor: nodeStyle.backgroundColor,
+                            borderColor: nodeStyle.borderColor,
+                            borderWidth: nodeStyle.borderWidth,
+                            shape: nodeStyle.shape,
+                            width: nodeStyle.width,
+                            height: nodeStyle.height
+                        },
+                        position: node.position
+                    });
+                });
+                
+                // Sample edges
+                const edges = [
+                    {
+                        source: 'ch1-scene1-restaurant',
+                        target: 'ch1-scene2-alec-bedroom',
+                        type: 'critical-path',
+                        label: 'Next scene'
+                    },
+                    {
+                        source: 'ch1-scene1-restaurant',
+                        target: 'ch1-scene1-nicole-pov',
+                        type: 'character-pov',
+                        label: 'Nicole POV'
+                    },
+                    {
+                        source: 'ch1-scene1-restaurant',
+                        target: 'ch1-scene1-alec-pov',
+                        type: 'character-pov',
+                        label: 'Alec POV'
+                    },
+                    {
+                        source: 'ch1-scene1-restaurant',
+                        target: 'ch1-scene1-steve-pov',
+                        type: 'character-pov',
+                        label: 'Steve POV'
+                    },
+                    {
+                        source: 'ch1-scene1-restaurant',
+                        target: 'nf-what-is-ai',
+                        type: 'fiction-nonfiction',
+                        label: 'Related concept'
+                    },
+                    {
+                        source: 'nf-what-is-ai',
+                        target: 'interactive-ai-quiz',
+                        type: 'related-concept',
+                        label: 'Interactive element'
+                    },
+                    {
+                        source: 'character-nicole',
+                        target: 'ch1-scene1-nicole-pov',
+                        type: 'character-pov'
+                    },
+                    {
+                        source: 'character-alec',
+                        target: 'ch1-scene1-alec-pov',
+                        type: 'character-pov'
+                    },
+                    {
+                        source: 'character-steve',
+                        target: 'ch1-scene1-steve-pov',
+                        type: 'character-pov'
+                    },
+                    {
+                        source: 'zachs-restaurant',
+                        target: 'ch1-scene1-restaurant',
+                        type: 'related-concept'
+                    }
+                ];
+                
+                // Add edges with styling
+                edges.forEach(edge => {
+                    const edgeStyle = edgeTypes[edge.type];
+                    
+                    cy.add({
+                        group: 'edges',
+                        data: {
+                            id: `edge-${edge.source}-${edge.target}`,
+                            source: edge.source,
+                            target: edge.target,
+                            label: edge.label || '',
+                            edgeType: edge.type,
+                            // Style properties
+                            color: edgeStyle.color,
+                            width: edgeStyle.width,
+                            lineStyle: edgeStyle.lineStyle,
+                            arrowShape: edgeStyle.targetArrowShape,
+                            curveStyle: edgeStyle.curveStyle
+                        }
+                    });
+                });
+                
+                updateGraphStats();
+                
+                // Set layout
+                cy.layout({
+                    name: 'preset'
+                }).run();
+            }
+            
+            // Show node properties in the sidebar
+            function showNodeProperties(node) {
+                hideProperties();
+                
+                // Display node properties panel
+                noSelectionMessage.style.display = 'none';
+                nodePropertiesPanel.style.display = 'block';
+                
+                // Set values
+                document.getElementById('node-id').value = node.id();
+                document.getElementById('node-title').value = node.data('label');
+                document.getElementById('node-description').value = node.data('description') || '';
+                
+                // Update content panel
+                updateContentPanel(node);
+            }
+            
+            // Update content panel with node data
+            function updateContentPanel(node) {
+                const nodeId = node.id();
+                const nodeType = node.data('nodeType');
+                const title = node.data('label');
+                
+                // Update panel title
+                document.getElementById('content-panel-title').textContent = title;
+                
+                // Update content text area based on node type
+                let contentText = "";
+                switch(nodeType) {
+                    case 'fiction':
+                        contentText = node.data('content') || 
+                            "This fiction node contains the narrative text for this scene.\n\n" +
+                            "In a full implementation, this would show the actual scene content, character dialog, " +
+                            "and descriptions from your story. You can edit this content by clicking the 'Edit' button.";
+                        break;
+                    case 'nonfiction':
+                        contentText = node.data('content') || 
+                            "This non-fiction node contains educational content about AI concepts and technology.\n\n" +
+                            "In a full implementation, this would contain explanations, definitions, historical context, " +
+                            "and references to further reading about the topic.";
+                        break;
+                    case 'character':
+                        contentText = `Character: ${title}\n\n` +
+                            `Appearance: ${node.data('appearance') || 'Not specified'}\n\n` +
+                            `Personality: ${node.data('personality') || 'Not specified'}\n\n` +
+                            `Background: ${node.data('background') || 'Not specified'}\n\n` +
+                            `Speech Pattern: ${node.data('speechPattern') || 'Not specified'}`;
+                        break;
+                    case 'interactive':
+                        contentText = `Interactive Element: ${title}\n\n` +
+                            `Type: ${node.data('componentType') || 'Simulation'}\n\n` +
+                            `Description: ${node.data('description') || 'Not specified'}\n\n` +
+                            `Instructions: ${node.data('instructions') || 'Not specified'}`;
+                        break;
+                    case 'world':
+                        contentText = `World Entity: ${title}\n\n` +
+                            `Type: ${node.data('entityType') || 'Location'}\n\n` +
+                            `Description: ${node.data('description') || 'Not specified'}\n\n` +
+                            `Historical Context: ${node.data('historicalContext') || 'Not specified'}\n\n` +
+                            `Cultural Significance: ${node.data('culturalSignificance') || 'Not specified'}`;
+                        break;
+                    default:
+                        contentText = "Select a node to view its content";
+                }
+                
+                document.getElementById('node-content-text').textContent = contentText;
+                
+                // Show/hide sections based on node type
+                const charactersSection = document.getElementById('characters-section');
+                const branchesSection = document.getElementById('branches-section');
+                
+                if (nodeType === 'fiction') {
+                    // For fiction nodes, show characters and branches
+                    charactersSection.style.display = 'block';
+                    branchesSection.style.display = 'block';
+                    
+                    // Populate characters
+                    populateCharacterList(node);
+                    
+                    // Populate branch points
+                    populateBranchList(node);
+                } else {
+                    // Hide these sections for non-fiction nodes
+                    charactersSection.style.display = 'none';
+                    branchesSection.style.display = 'none';
+                }
+                
+                // Populate connections for all node types
+                populateConnectionList(node);
+            }
+            
+            // Populate character list
+            function populateCharacterList(node) {
+                const characterList = document.getElementById('character-list');
+                characterList.innerHTML = '';
+                
+                // Get characters from node data or find related character nodes
+                let characters = node.data('characters') || [];
+                
+                // If no characters in data, look for character connections
+                if (characters.length === 0) {
+                    // Find edges to character nodes
+                    const characterEdges = node.connectedEdges().filter(edge => {
+                        const otherNode = edge.source().id() === node.id() ? edge.target() : edge.source();
+                        return otherNode.data('nodeType') === 'character';
+                    });
+                    
+                    // Extract character names
+                    characterEdges.forEach(edge => {
+                        const characterNode = edge.source().id() === node.id() ? edge.target() : edge.source();
+                        characters.push(characterNode.data('label'));
+                    });
+                }
+                
+                // If still no characters, add placeholder
+                if (characters.length === 0) {
+                    const placeholder = document.createElement('div');
+                    placeholder.textContent = 'No characters associated with this node';
+                    placeholder.style.fontSize = '0.85rem';
+                    placeholder.style.color = '#777';
+                    characterList.appendChild(placeholder);
+                } else {
+                    // Add each character
+                    characters.forEach(character => {
+                        const characterItem = document.createElement('div');
+                        characterItem.className = 'character-item';
+                        characterItem.textContent = character;
+                        characterList.appendChild(characterItem);
+                    });
+                }
+            }
+            
+            // Populate branch list
+            function populateBranchList(node) {
+                const branchList = document.getElementById('branch-list');
+                branchList.innerHTML = '';
+                
+                // Get branch points from node data
+                const branchPoints = node.data('branchPoints') || [];
+                
+                // Also look for branch-point type connections
+                const branchEdges = node.connectedEdges().filter(edge => {
+                    return edge.source().id() === node.id() && edge.data('edgeType') === 'branch-point';
+                });
+                
+                // If no branches found, add placeholder
+                if (branchPoints.length === 0 && branchEdges.length === 0) {
+                    const placeholder = document.createElement('div');
+                    placeholder.textContent = 'No branch points in this node';
+                    placeholder.style.fontSize = '0.85rem';
+                    placeholder.style.color = '#777';
+                    branchList.appendChild(placeholder);
+                } else {
+                    // Add data branch points
+                    branchPoints.forEach(branch => {
+                        const branchItem = document.createElement('div');
+                        branchItem.className = 'branch-item';
+                        branchItem.textContent = branch.text || 'Branch point';
+                        branchList.appendChild(branchItem);
+                    });
+                    
+                    // Add edge branch points
+                    branchEdges.forEach(edge => {
+                        const branchItem = document.createElement('div');
+                        branchItem.className = 'branch-item';
+                        branchItem.textContent = edge.data('label') || 'Branch to ' + edge.target().data('label');
+                        branchList.appendChild(branchItem);
+                    });
+                }
+            }
+            
+            // Populate connection list
+            function populateConnectionList(node) {
+                const connectionsList = document.getElementById('outgoing-connections');
+                connectionsList.innerHTML = '';
+                
+                // Get all connected edges
+                const connectedEdges = node.connectedEdges();
+                
+                if (connectedEdges.length === 0) {
+                    const placeholder = document.createElement('div');
+                    placeholder.textContent = 'No connections';
+                    placeholder.style.fontSize = '0.85rem';
+                    placeholder.style.color = '#777';
+                    connectionsList.appendChild(placeholder);
+                    return;
+                }
+                
+                // Group by connection type
+                const connectionsByType = {};
+                
+                connectedEdges.forEach(edge => {
+                    const type = edge.data('edgeType');
+                    if (!connectionsByType[type]) {
+                        connectionsByType[type] = [];
+                    }
+                    
+                    // Determine direction
+                    const isOutgoing = edge.source().id() === node.id();
+                    const otherNode = isOutgoing ? edge.target() : edge.source();
+                    const direction = isOutgoing ? 'to' : 'from';
+                    
+                    connectionsByType[type].push({
+                        edge: edge,
+                        otherNode: otherNode,
+                        direction: direction,
+                        label: edge.data('label') || ''
+                    });
+                });
+                
+                // Add connections by type
+                Object.keys(connectionsByType).forEach(type => {
+                    // Create type header
+                    const typeHeader = document.createElement('div');
+                    typeHeader.style.fontWeight = 'bold';
+                    typeHeader.style.fontSize = '0.85rem';
+                    typeHeader.style.marginTop = '10px';
+                    typeHeader.style.marginBottom = '5px';
+                    typeHeader.textContent = formatConnectionType(type);
+                    connectionsList.appendChild(typeHeader);
+                    
+                    // Add connections of this type
+                    connectionsByType[type].forEach(conn => {
+                        const connectionItem = document.createElement('div');
+                        connectionItem.className = 'connection-item';
+                        
+                        // Create indicator with the correct color
+                        const indicator = document.createElement('div');
+                        indicator.className = 'connection-item-indicator';
+                        indicator.style.backgroundColor = edgeTypes[type].color;
+                        connectionItem.appendChild(indicator);
+                        
+                        // Create label
+                        const label = document.createElement('div');
+                        label.style.flex = '1';
+                        label.textContent = `${conn.direction} ${conn.otherNode.data('label')}${conn.label ? ': ' + conn.label : ''}`;
+                        connectionItem.appendChild(label);
+                        
+                        // Add click handler to select the connected node
+                        connectionItem.addEventListener('click', function() {
+                            cy.elements().unselect();
+                            conn.otherNode.select();
+                            showNodeProperties(conn.otherNode);
+                        });
+                        
+                        connectionsList.appendChild(connectionItem);
+                    });
+                });
+            }
+            
+            // Helper to format connection type names for display
+            function formatConnectionType(type) {
+                switch(type) {
+                    case 'critical-path':
+                        return 'Critical Path';
+                    case 'character-pov':
+                        return 'Character POV';
+                    case 'branch-point':
+                        return 'Branch Points';
+                    case 'concept-sequence':
+                        return 'Concept Sequence';
+                    case 'related-concept':
+                        return 'Related Concepts';
+                    case 'fiction-nonfiction':
+                        return 'Fiction-Nonfiction Links';
+                    default:
+                        return type.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+                }
+            }
+            
+            // Show edge properties in the sidebar
+            function showEdgeProperties(edge) {
+                hideProperties();
+                
+                // Display edge properties panel
+                noSelectionMessage.style.display = 'none';
+                edgePropertiesPanel.style.display = 'block';
+                
+                // Set values
+                document.getElementById('edge-type').value = edge.data('edgeType');
+                document.getElementById('edge-label').value = edge.data('label') || '';
+            }
+            
+            // Hide all property panels
+            function hideProperties() {
+                noSelectionMessage.style.display = 'block';
+                nodePropertiesPanel.style.display = 'none';
+                edgePropertiesPanel.style.display = 'none';
+            }
+            
+            // Update edge properties from the form
+            function updateEdgeProperties() {
+                const selectedEdge = cy.$('edge:selected');
+                if (selectedEdge.length > 0) {
+                    const edgeType = document.getElementById('edge-type').value;
+                    const edgeLabel = document.getElementById('edge-label').value;
+                    
+                    // Update edge data
+                    selectedEdge.data('edgeType', edgeType);
+                    selectedEdge.data('label', edgeLabel);
+                    
+                    // Update visual style
+                    const edgeStyle = edgeTypes[edgeType];
+                    selectedEdge.data('color', edgeStyle.color);
+                    selectedEdge.data('width', edgeStyle.width);
+                    selectedEdge.data('lineStyle', edgeStyle.lineStyle);
+                    selectedEdge.data('arrowShape', edgeStyle.targetArrowShape);
+                    selectedEdge.data('curveStyle', edgeStyle.curveStyle);
+                    
+                    statusInfo.textContent = 'Connection updated';
+                }
+            }
+            
+            // Delete a node
+            function deleteNode(node) {
+                node.remove();
+                hideProperties();
+                updateGraphStats();
+                statusInfo.textContent = 'Node deleted';
+            }
+            
+            // Delete an edge
+            function deleteEdge(edge) {
+                edge.remove();
+                hideProperties();
+                updateGraphStats();
+                statusInfo.textContent = 'Connection deleted';
+            }
+            
+            // Duplicate a node
+            function duplicateNode(node) {
+                const nodeData = node.data();
+                const position = node.position();
+                
+                // Create new ID for the duplicate
+                const newId = `${nodeData.nodeType}-${++nodeCounter}`;
+                
+                cy.add({
+                    group: 'nodes',
+                    data: {
+                        ..._.omit(nodeData, ['id']),
+                        id: newId,
+                        label: `Copy of ${nodeData.label}`
+                    },
+                    position: {
+                        x: position.x + 50,
+                        y: position.y + 50
+                    }
+                });
+                
+                updateGraphStats();
+                statusInfo.textContent = 'Node duplicated';
+            }
+            
+            // Start creating a connection
+            function startConnection(node) {
+                sourceNode = node;
+                connectionPrompt.classList.add('active');
+                statusInfo.textContent = 'Select target node to complete connection';
+            }
+            
+            // Complete a connection between nodes
+            function completeConnection(targetNode) {
+                if (sourceNode && targetNode && sourceNode.id() !== targetNode.id()) {
+                    const edgeStyle = edgeTypes[selectedConnectionType];
+                    
+                    cy.add({
+                        group: 'edges',
+                        data: {
+                            id: `edge-${sourceNode.id()}-${targetNode.id()}`,
+                            source: sourceNode.id(),
+                            target: targetNode.id(),
+                            label: '',
+                            edgeType: selectedConnectionType,
+                            // Style properties
+                            color: edgeStyle.color,
+                            width: edgeStyle.width,
+                            lineStyle: edgeStyle.lineStyle,
+                            arrowShape: edgeStyle.targetArrowShape,
+                            curveStyle: edgeStyle.curveStyle
+                        }
+                    });
+                    
+                    updateGraphStats();
+                    statusInfo.textContent = 'Connection created';
+                }
+                
+                cancelConnection();
+            }
+            
+            // Cancel connection creation
+            function cancelConnection() {
+                sourceNode = null;
+                connectionPrompt.classList.remove('active');
+                currentTool = 'select';
+                
+                // Update tools UI
+                document.querySelectorAll('.tool-button').forEach(b => b.classList.remove('active'));
+                document.getElementById('select-tool').classList.add('active');
+                
+                statusInfo.textContent = 'Ready';
+            }
+            
+            // Show context menu at position
+            function showContextMenu(position, targetType) {
+                hideContextMenu();
+                
+                // Position the menu
+                contextMenu.style.left = position.x + 'px';
+                contextMenu.style.top = position.y + 'px';
+                
+                // Show/hide options based on target type
+                if (targetType === 'edge') {
+                    document.getElementById('context-connect').style.display = 'none';
+                    document.getElementById('context-duplicate').style.display = 'none';
+                } else {
+                    document.getElementById('context-connect').style.display = 'block';
+                    document.getElementById('context-duplicate').style.display = 'block';
+                }
+                
+                contextMenu.classList.add('active');
+            }
+            
+            // Hide context menu
+            function hideContextMenu() {
+                contextMenu.classList.remove('active');
+            }
+            
+            // Show tooltip
+            function showTooltip(position, text) {
+                tooltip.textContent = text;
+                tooltip.style.left = (position.x + 10) + 'px';
+                tooltip.style.top = (position.y + 10) + 'px';
+                tooltip.style.display = 'block';
+            }
+            
+            // Hide tooltip
+            function hideTooltip() {
+                tooltip.style.display = 'none';
+            }
+            
+            // Open node editor modal
+            function openNodeEditor(node) {
+                const nodeType = node.data('nodeType');
+                editingNodeId = node.id();
+                
+                // Set modal title
+                modalTitle.textContent = `Edit ${capitalizeFirstLetter(nodeType)} Node`;
+                
+                // Show the appropriate form
+                Object.keys(forms).forEach(key => {
+                    forms[key].style.display = key === nodeType ? 'block' : 'none';
+                });
+                
+                currentModalNodeType = nodeType;
+                
+                // Populate form with node data
+                populateNodeForm(node);
+                
+                // Show modal
+                nodeEditorModal.classList.add('active');
+            }
+            
+            // Populate node form with data
+            function populateNodeForm(node) {
+                const nodeType = node.data('nodeType');
+                const data = node.data();
+                
+                switch (nodeType) {
+                    case 'fiction':
+                        document.getElementById('fiction-id').value = node.id();
+                        document.getElementById('fiction-title').value = data.label || '';
+                        document.getElementById('fiction-pov').value = data.povCharacter || '';
+                        document.getElementById('fiction-content').value = data.content || '';
+                        document.getElementById('fiction-location').value = data.location || '';
+                        document.getElementById('fiction-timeline').value = data.timeline || '';
+                        document.getElementById('fiction-tags').value = data.tags ? data.tags.join(', ') : '';
+                        break;
+                        
+                    case 'nonfiction':
+                        document.getElementById('nonfiction-id').value = node.id();
+                        document.getElementById('nonfiction-title').value = data.label || '';
+                        document.getElementById('nonfiction-complexity').value = data.complexity || 'basic';
+                        document.getElementById('nonfiction-content').value = data.content || '';
+                        document.getElementById('nonfiction-tags').value = data.tags ? data.tags.join(', ') : '';
+                        break;
+                        
+                    case 'character':
+                        document.getElementById('character-id').value = node.id();
+                        document.getElementById('character-name').value = data.label || '';
+                        document.getElementById('character-type').value = data.characterType || 'primary';
+                        document.getElementById('character-appearance').value = data.appearance || '';
+                        document.getElementById('character-personality').value = data.personality || '';
+                        document.getElementById('character-background').value = data.background || '';
+                        document.getElementById('character-speech').value = data.speechPattern || '';
+                        break;
+                        
+                    case 'interactive':
+                        document.getElementById('interactive-id').value = node.id();
+                        document.getElementById('interactive-title').value = data.label || '';
+                        document.getElementById('interactive-type').value = data.componentType || 'simulation';
+                        document.getElementById('interactive-description').value = data.description || '';
+                        document.getElementById('interactive-instructions').value = data.instructions || '';
+                        document.getElementById('interactive-objectives').value = data.objectives ? data.objectives.join('\n') : '';
+                        break;
+                        
+                    case 'world':
+                        document.getElementById('world-id').value = node.id();
+                        document.getElementById('world-name').value = data.label || '';
+                        document.getElementById('world-type').value = data.entityType || 'location';
+                        document.getElementById('world-description').value = data.description || '';
+                        document.getElementById('world-visual').value = data.visualAttributes ? data.visualAttributes.join('\n') : '';
+                        document.getElementById('world-historical').value = data.historicalContext || '';
+                        document.getElementById('world-significance').value = data.culturalSignificance || '';
+                        break;
+                }
+            }
+            
+            // Save node edit
+            function saveNodeEdit() {
+                const node = cy.$id(editingNodeId);
+                if (!node) return;
+                
+                let newData = {};
+                
+                switch (currentModalNodeType) {
+                    case 'fiction':
+                        newData = {
+                            id: document.getElementById('fiction-id').value,
+                            label: document.getElementById('fiction-title').value,
+                            fullTitle: document.getElementById('fiction-title').value,
+                            povCharacter: document.getElementById('fiction-pov').value,
+                            content: document.getElementById('fiction-content').value,
+                            location: document.getElementById('fiction-location').value,
+                            timeline: document.getElementById('fiction-timeline').value,
+                            tags: document.getElementById('fiction-tags').value.split(',').map(tag => tag.trim())
+                        };
+                        break;
+                        
+                    case 'nonfiction':
+                        newData = {
+                            id: document.getElementById('nonfiction-id').value,
+                            label: document.getElementById('nonfiction-title').value,
+                            fullTitle: document.getElementById('nonfiction-title').value,
+                            complexity: document.getElementById('nonfiction-complexity').value,
+                            content: document.getElementById('nonfiction-content').value,
+                            tags: document.getElementById('nonfiction-tags').value.split(',').map(tag => tag.trim())
+                        };
+                        break;
+                        
+                    case 'character':
+                        newData = {
+                            id: document.getElementById('character-id').value,
+                            label: document.getElementById('character-name').value,
+                            fullTitle: document.getElementById('character-name').value,
+                            characterType: document.getElementById('character-type').value,
+                            appearance: document.getElementById('character-appearance').value,
+                            personality: document.getElementById('character-personality').value,
+                            background: document.getElementById('character-background').value,
+                            speechPattern: document.getElementById('character-speech').value
+                        };
+                        break;
+                        
+                    case 'interactive':
+                        newData = {
+                            id: document.getElementById('interactive-id').value,
+                            label: document.getElementById('interactive-title').value,
+                            fullTitle: document.getElementById('interactive-title').value,
+                            componentType: document.getElementById('interactive-type').value,
+                            description: document.getElementById('interactive-description').value,
+                            instructions: document.getElementById('interactive-instructions').value,
+                            objectives: document.getElementById('interactive-objectives').value.split('\n').map(line => line.trim())
+                        };
+                        break;
+                        
+                    case 'world':
+                        newData = {
+                            id: document.getElementById('world-id').value,
+                            label: document.getElementById('world-name').value,
+                            fullTitle: document.getElementById('world-name').value,
+                            entityType: document.getElementById('world-type').value,
+                            description: document.getElementById('world-description').value,
+                            visualAttributes: document.getElementById('world-visual').value.split('\n').map(line => line.trim()),
+                            historicalContext: document.getElementById('world-historical').value,
+                            culturalSignificance: document.getElementById('world-significance').value
+                        };
+                        break;
+                }
+                
+                // Check if ID changed and update it
+                const newId = newData.id;
+                delete newData.id; // Remove from data object as ID is handled separately
+                
+                if (newId !== editingNodeId) {
+                    // ID change requires removing and re-adding the node
+                    const oldPosition = node.position();
+                    const oldData = node.data();
+                    
+                    // Get connected edges
+                    const connectedEdges = node.connectedEdges().map(edge => {
+                        return {
+                            source: edge.source().id() === editingNodeId ? newId : edge.source().id(),
+                            target: edge.target().id() === editingNodeId ? newId : edge.target().id(),
+                            data: edge.data()
+                        };
+                    });
+                    
+                    // Remove old node and its edges
+                    node.remove();
+                    
+                    // Add new node
+                    cy.add({
+                        group: 'nodes',
+                        data: {
+                            ...oldData,
+                            ...newData,
+                            id: newId
+                        },
+                        position: oldPosition
+                    });
+                    
+                    // Recreate edges
+                    connectedEdges.forEach(edge => {
+                        cy.add({
+                            group: 'edges',
+                            data: {
+                                ...edge.data,
+                                id: `edge-${edge.source}-${edge.target}`,
+                                source: edge.source,
+                                target: edge.target
+                            }
+                        });
+                    });
+                    
+                    // Update the editing ID
+                    editingNodeId = newId;
+                } else {
+                    // Just update the data
+                    node.data(newData);
+                }
+                
+                // Close modal and update UI
+                nodeEditorModal.classList.remove('active');
+                cy.$id(editingNodeId).select();
+                showNodeProperties(cy.$id(editingNodeId));
+                statusInfo.textContent = 'Node updated';
+            }
+            
+            // Update graph statistics
+            function updateGraphStats() {
+                const nodeCount = cy.nodes().length;
+                const edgeCount = cy.edges().length;
+                
+                statusNodes.textContent = `Nodes: ${nodeCount} | Connections: ${edgeCount}`;
+            }
+            
+            // Save project to JSON
+            function saveProject() {
+                const data = {
+                    nodes: cy.nodes().map(node => {
+                        return {
+                            data: node.data(),
+                            position: node.position()
+                        };
+                    }),
+                    edges: cy.edges().map(edge => {
+                        return {
+                            data: edge.data()
+                        };
+                    })
+                };
+                
+                // Convert to JSON string
+                const jsonString = JSON.stringify(data, null, 2);
+                
+                // Normally this would trigger a download, but we'll just alert for demo
+                console.log('Saved project:', jsonString);
+                alert('Project saved to console. In a full implementation, this would download a .json file.');
+            }
+            
+            // Export project to structured format
+            function exportProject() {
+                // Convert graph to structured JSON format
+                const exportData = {
+                    metadata: {
+                        title: 'Life in 2045',
+                        author: 'Created with Interactive Story Node Editor',
+                        created: new Date().toISOString(),
+                        version: '1.0'
+                    },
+                    nodes: {},
+                    edges: []
+                };
+                
+                // Group nodes by type
+                cy.nodes().forEach(node => {
+                    const nodeType = node.data('nodeType');
+                    if (!exportData.nodes[nodeType]) {
+                        exportData.nodes[nodeType] = [];
+                    }
+                    
+                    exportData.nodes[nodeType].push({
+                        id: node.id(),
+                        label: node.data('label'),
+                        data: node.data(),
+                        position: node.position()
+                    });
+                });
+                
+                // Add edges
+                cy.edges().forEach(edge => {
+                    exportData.edges.push({
+                        source: edge.source().id(),
+                        target: edge.target().id(),
+                        type: edge.data('edgeType'),
+                        label: edge.data('label')
+                    });
+                });
+                
+                // Convert to JSON string
+                const jsonString = JSON.stringify(exportData, null, 2);
+                
+                console.log('Exported project:', jsonString);
+                alert('Project exported to console. In a full implementation, this would download a structured .json file.');
+            }
+            
+            // Navigation to other tools
+            document.getElementById('home-btn').addEventListener('click', function() {
+                if (confirm('Return to the home page? Unsaved changes will be lost.')) {
+                    window.location.href = 'index.html';
+                }
+            });
+            
+            document.getElementById('critical-path-btn').addEventListener('click', function() {
+                if (confirm('Go to the Critical Path Editor? Unsaved changes will be lost.')) {
+                    window.location.href = 'critical-path-navigator.html';
+                }
+            });
+            
+            document.getElementById('reader-btn').addEventListener('click', function() {
+                if (confirm('Go to the Reader? Unsaved changes will be lost.')) {
+                    window.location.href = 'reader-prototype.html';
+                }
+            });
+            
+            // Helper functions
+            
+            function getDefaultNodeTitle(nodeType, counter) {
+                switch (nodeType) {
+                    case 'fiction':
+                        return `Scene ${counter}`;
+                    case 'nonfiction':
+                        return `Concept ${counter}`;
+                    case 'character':
+                        return `Character ${counter}`;
+                    case 'interactive':
+                        return `Interactive ${counter}`;
+                    case 'world':
+                        return `Entity ${counter}`;
+                    default:
+                        return `Node ${counter}`;
+                }
+            }
+            
+            function capitalizeFirstLetter(string) {
+                return string.charAt(0).toUpperCase() + string.slice(1);
+            }
+            
+            // Prevent context menu on right-click
+            document.addEventListener('contextmenu', function(event) {
+                if (event.target.closest('#graph')) {
+                    event.preventDefault();
+                }
+            });
+            
+            // Handle clicks outside of context menu
+            document.addEventListener('click', function(event) {
+                if (!event.target.closest('.context-menu')) {
+                    hideContextMenu();
+                }
+            });
+            
+            // Keyboard shortcuts
+            document.addEventListener('keydown', function(event) {
+                // Delete selected elements with Delete key
+                if (event.key === 'Delete') {
+                    const selected = cy.$(':selected');
+                    if (selected.length > 0) {
+                        if (confirm('Delete selected items?')) {
+                            selected.remove();
+                            hideProperties();
+                            updateGraphStats();
+                        }
+                    }
+                }
+                
+                // Escape key to cancel connection or close modal
+                if (event.key === 'Escape') {
+                    if (sourceNode) {
+                        cancelConnection();
+                    }
+                    if (nodeEditorModal.classList.contains('active')) {
+                        nodeEditorModal.classList.remove('active');
+                    }
+                    hideContextMenu();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

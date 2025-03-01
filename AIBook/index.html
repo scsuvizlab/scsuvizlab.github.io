@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Life in 2045 - Interactive Reader</title>
+    <title>Life in 2045 - Interactive Book Editor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -11,668 +12,519 @@
             --accent-color: #e74c3c;
             --background-color: #f9f9f9;
             --text-color: #333;
-            --border-color: #ddd;
-            --highlight-color: #fff8e1;
-            --highlight-border: #ffc107;
+            --card-background: #fff;
+            --card-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            --card-border: 1px solid rgba(0,0,0,0.05);
+            --fiction-color: #6ecff6;
+            --nonfiction-color: #9370db;
+            --chapter-color: #8e44ad;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: var(--text-color);
             background-color: var(--background-color);
-            margin: 0;
-            padding: 0;
-            display: flex;
+            color: var(--text-color);
             min-height: 100vh;
-        }
-
-        .app-container {
-            display: flex;
-            width: 100%;
-            max-width: 1600px;
-            margin: 0 auto;
-        }
-
-        /* Navigation Sidebar */
-        .sidebar {
-            width: 250px;
-            background-color: var(--primary-color);
-            color: white;
-            padding: 20px;
             display: flex;
             flex-direction: column;
         }
 
-        .logo {
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin-bottom: 30px;
-            border-bottom: 1px solid rgba(255,255,255,0.2);
-            padding-bottom: 15px;
-        }
-
-        .nav-section {
-            margin-bottom: 25px;
-        }
-
-        .nav-section h3 {
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            margin-bottom: 10px;
-            opacity: 0.7;
-        }
-
-        .nav-button {
-            background: none;
-            border: none;
-            color: white;
-            padding: 8px 10px;
-            text-align: left;
-            width: 100%;
-            border-radius: 4px;
-            margin-bottom: 5px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-            display: flex;
-            align-items: center;
-        }
-
-        .nav-button:hover {
-            background-color: rgba(255,255,255,0.1);
-        }
-
-        .nav-button.active {
-            background-color: var(--secondary-color);
-        }
-
-        .nav-icon {
-            margin-right: 10px;
-            font-size: 1.2rem;
-        }
-
-        /* Main Content Area */
-        .content-area {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            max-height: 100vh;
-            overflow: hidden;
-        }
-
-        /* Top Controls */
-        .controls-bar {
-            background-color: white;
-            padding: 15px 20px;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .pov-controls {
-            display: flex;
-            gap: 10px;
-        }
-
-        .pov-button {
-            background-color: var(--secondary-color);
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-            font-size: 0.9rem;
-        }
-
-        .pov-button.active {
+        header {
             background-color: var(--primary-color);
+            color: white;
+            padding: 1.5rem 2rem;
+            text-align: center;
         }
 
-        .pov-button:hover {
-            background-color: #2980b9;
-        }
-
-        .mode-controls {
-            display: flex;
-            gap: 10px;
-        }
-
-        .mode-button {
-            background-color: #f0f0f0;
-            color: #333;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-        }
-
-        .mode-button:hover {
-            background-color: #e0e0e0;
-        }
-
-        .mode-button.active {
-            background-color: #e0e0e0;
+        .header-title {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
             font-weight: bold;
         }
 
-        /* Content Display */
-        .content-container {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px 40px 40px;
-            max-width: 800px;
-            margin: 0 auto;
-            width: 100%;
-        }
-
-        .chapter-title {
-            margin-bottom: 30px;
-        }
-
-        .chapter-title h1 {
-            margin-bottom: 5px;
-            color: var(--primary-color);
-        }
-
-        .chapter-title .subtitle {
-            font-style: italic;
-            color: #7f8c8d;
-        }
-
-        .scene-content {
+        .header-subtitle {
             font-size: 1.1rem;
-            line-height: 1.7;
-            text-align: justify;
+            opacity: 0.9;
         }
 
-        .scene-content p {
-            margin-bottom: 1.2em;
+        main {
+            flex: 1;
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
         }
 
-        .branch-point {
-            background-color: var(--highlight-color);
-            border-left: 3px solid var(--highlight-border);
-            padding: 12px 18px;
-            margin: 20px 0;
-            position: relative;
-            cursor: pointer;
-            transition: background-color 0.2s;
+        .tools-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
         }
 
-        .branch-point:hover {
-            background-color: #fff0c8;
-        }
-
-        .branch-point:after {
-            content: "Branch Point";
-            position: absolute;
-            top: -10px;
-            left: 10px;
-            background-color: var(--highlight-border);
-            color: #000;
-            font-size: 0.8em;
-            padding: 2px 8px;
+        .tool-card {
+            background-color: var(--card-background);
             border-radius: 10px;
-        }
-
-        /* Bottom Navigation */
-        .bottom-nav {
-            background-color: white;
-            padding: 15px 20px;
-            border-top: 1px solid var(--border-color);
+            box-shadow: var(--card-shadow);
+            border: var(--card-border);
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
         }
 
-        .nav-button-large {
+        .tool-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 20px rgba(0,0,0,0.15);
+        }
+
+        .tool-header {
+            padding: 1.5rem;
+            background-color: var(--primary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .tool-icon {
+            background-color: rgba(255,255,255,0.2);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .tool-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+        }
+
+        .tool-body {
+            padding: 1.5rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tool-description {
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+            flex: 1;
+        }
+
+        .tool-features {
+            margin-bottom: 1.5rem;
+        }
+
+        .feature-list {
+            list-style-type: none;
+        }
+
+        .feature-item {
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .feature-icon {
+            color: var(--secondary-color);
+        }
+
+        .tool-preview {
+            width: 100%;
+            height: 160px;
+            background-color: #f1f1f1;
+            border-radius: 5px;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid #e0e0e0;
+        }
+
+        .preview-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: top;
+        }
+
+        .tool-actions {
+            text-align: center;
+        }
+
+        .tool-button {
             background-color: var(--secondary-color);
             color: white;
             border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
+            padding: 0.8rem 1.5rem;
+            border-radius: 5px;
             cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
             transition: background-color 0.2s;
-            display: flex;
+            display: inline-flex;
             align-items: center;
-            gap: 10px;
+            gap: 0.5rem;
         }
 
-        .nav-button-large:hover {
+        .tool-button:hover {
             background-color: #2980b9;
         }
 
-        .nav-button-large:disabled {
-            background-color: #95a5a6;
-            cursor: not-allowed;
-        }
-
-        /* Right Sidebar for Context Info */
-        .context-sidebar {
-            width: 300px;
-            border-left: 1px solid var(--border-color);
-            padding: 20px;
+        .introduction {
             background-color: white;
-            overflow-y: auto;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 2rem;
+            border: var(--card-border);
         }
 
-        .context-section {
-            margin-bottom: 30px;
-        }
-
-        .context-section h3 {
-            margin-bottom: 15px;
-            font-size: 1.1rem;
-            padding-bottom: 8px;
-            border-bottom: 1px solid var(--border-color);
+        .intro-title {
+            margin-bottom: 1rem;
             color: var(--primary-color);
+            font-size: 1.5rem;
         }
 
-        .context-metadata {
-            margin-bottom: 10px;
+        .intro-text {
+            line-height: 1.6;
         }
 
-        .metadata-label {
-            font-weight: bold;
+        .intro-text p {
+            margin-bottom: 1rem;
+        }
+
+        footer {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1.5rem 2rem;
+            text-align: center;
             font-size: 0.9rem;
         }
 
-        .thematic-tags {
+        .footer-links {
             display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 10px;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 0.5rem;
         }
 
-        .tag {
-            background-color: #e0e0e0;
-            padding: 3px 10px;
-            border-radius: 15px;
-            font-size: 0.85em;
-        }
-
-        .related-content {
-            margin-top: 15px;
-        }
-
-        .related-link {
-            display: block;
-            padding: 8px 0;
-            color: var(--secondary-color);
+        .footer-link {
+            color: white;
+            opacity: 0.8;
             text-decoration: none;
-            border-bottom: 1px solid #efefef;
+            transition: opacity 0.2s;
         }
 
-        .related-link:hover {
-            text-decoration: underline;
+        .footer-link:hover {
+            opacity: 1;
         }
 
-        .breadcrumb-trail {
-            padding: 10px 0;
-            font-size: 0.9rem;
-            color: #777;
-            border-bottom: 1px solid #efefef;
-            margin-bottom: 15px;
+        /* Scene Editor Tool Card */
+        .scene-editor-tool .tool-header {
+            background-color: var(--fiction-color);
         }
 
-        .breadcrumb-item {
+        /* Critical Path Tool Card */
+        .critical-path-tool .tool-header {
+            background-color: var(--chapter-color);
+        }
+
+        /* Reader Tool Card */
+        .reader-tool .tool-header {
+            background-color: var(--nonfiction-color);
+        }
+
+        /* Status indicator */
+        .status-indicator {
             display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 3px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-left: 0.5rem;
+            text-transform: uppercase;
         }
 
-        .breadcrumb-item:not(:last-child):after {
-            content: "›";
-            margin: 0 5px;
+        .status-ready {
+            background-color: #2ecc71;
+            color: white;
         }
 
-        .loading-indicator {
-            display: none;
+        .status-in-progress {
+            background-color: #f39c12;
+            color: white;
+        }
+
+        .status-planned {
+            background-color: #95a5a6;
+            color: white;
+        }
+
+        /* Welcome modal */
+        .modal {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
-            height: 3px;
-            background-color: var(--secondary-color);
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
             z-index: 1000;
-            animation: loadingBar 2s infinite;
         }
 
-        @keyframes loadingBar {
-            0% { width: 0; }
-            50% { width: 50%; }
-            100% { width: 100%; }
+        .modal-content {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            width: 90%;
+            max-width: 600px;
+            position: relative;
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #e0e0e0;
+            text-align: right;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #777;
+        }
+
+        .modal-button {
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .modal-button.primary {
+            background-color: var(--secondary-color);
+            color: white;
         }
     </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <div class="loading-indicator" id="loading-indicator"></div>
-    <div class="app-container">
-        <!-- Left Navigation Sidebar -->
-        <div class="sidebar">
-            <div class="logo">Life in 2045</div>
-            
-            <div class="nav-section">
-                <h3>Navigation</h3>
-                <button class="nav-button active">
-                    <i class="nav-icon fas fa-book-open"></i> Continue Reading
-                </button>
-                <button class="nav-button">
-                    <i class="nav-icon fas fa-list"></i> Chapter List
-                </button>
-                <button class="nav-button">
-                    <i class="nav-icon fas fa-bookmark"></i> Bookmarks
-                </button>
-            </div>
-            
-            <div class="nav-section">
-                <h3>Content Tracks</h3>
-                <button class="nav-button active">
-                    <i class="nav-icon fas fa-book"></i> Fiction
-                </button>
-                <button class="nav-button">
-                    <i class="nav-icon fas fa-brain"></i> Non-Fiction
-                </button>
-            </div>
-            
-            <div class="nav-section">
-                <h3>Characters</h3>
-                <button class="nav-button">
-                    <i class="nav-icon fas fa-user"></i> Zach
-                </button>
-                <button class="nav-button">
-                    <i class="nav-icon fas fa-user"></i> Nicole
-                </button>
-                <button class="nav-button">
-                    <i class="nav-icon fas fa-user"></i> Steve
-                </button>
-                <button class="nav-button">
-                    <i class="nav-icon fas fa-user"></i> Alec
-                </button>
-            </div>
-            
-            <div class="nav-section">
-                <h3>Settings</h3>
-                <button class="nav-button">
-                    <i class="nav-icon fas fa-cog"></i> Preferences
-                </button>
-                <button class="nav-button">
-                    <i class="nav-icon fas fa-question-circle"></i> Help
-                </button>
+    <header>
+        <div class="header-title">Life in 2045</div>
+        <div class="header-subtitle">Interactive Book Editing Platform</div>
+    </header>
+
+    <main>
+        <div class="introduction">
+            <h2 class="intro-title">Welcome to the Life in 2045 Editor</h2>
+            <div class="intro-text">
+                <p>This platform provides you with a set of integrated tools for creating, editing, and previewing your interactive book. Navigate between the different components to build your story structure, edit detailed scenes, and experience your book as readers will see it.</p>
+                <p>Start by selecting one of the tools below. You can always navigate between tools using the navigation buttons within each editor.</p>
             </div>
         </div>
-        
-        <!-- Main Content Area -->
-        <div class="content-area">
-            <!-- Top Controls Bar -->
-            <div class="controls-bar">
-                <div class="pov-controls">
-                    <button class="pov-button active" data-pov="Zach">Zach</button>
-                    <button class="pov-button" data-pov="Nicole">Nicole</button>
-                    <button class="pov-button" data-pov="Steve">Steve</button>
-                    <button class="pov-button" data-pov="Alec">Alec</button>
-                    <button class="pov-button" data-pov="Rhett">Rhett</button>
+
+        <div class="tools-container">
+            <!-- Scene Editor Card -->
+            <div class="tool-card scene-editor-tool">
+                <div class="tool-header">
+                    <div class="tool-icon">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <div class="tool-title">Scene Editor <span class="status-indicator status-ready">Ready</span></div>
                 </div>
-                
-                <div class="mode-controls">
-                    <button class="mode-button" title="Text-to-Speech">
-                        <i class="fas fa-volume-up"></i>
-                    </button>
-                    <button class="mode-button" title="Generate Images">
-                        <i class="fas fa-image"></i>
-                    </button>
-                    <button class="mode-button active" title="Traditional Reading">
-                        <i class="fas fa-paragraph"></i>
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Content Display -->
-            <div class="content-container" id="content-display">
-                <div class="breadcrumb-trail">
-                    <div class="breadcrumb-item">Chapter 1</div>
-                    <div class="breadcrumb-item">Restaurant Scene</div>
-                    <div class="breadcrumb-item">Zach's POV</div>
-                </div>
-                
-                <div class="chapter-title">
-                    <h1>Chapter 1</h1>
-                    <div class="subtitle">A New Beginning</div>
-                </div>
-                
-                <div class="scene-content" id="scene-content">
-                    <!-- Content will be loaded here dynamically -->
-                    <p>Loading content...</p>
-                </div>
-            </div>
-            
-            <!-- Bottom Navigation -->
-            <div class="bottom-nav">
-                <button class="nav-button-large" id="prev-button" disabled>
-                    <i class="fas fa-arrow-left"></i> Previous
-                </button>
-                <button class="nav-button-large" id="next-button">
-                    Continue <i class="fas fa-arrow-right"></i>
-                </button>
-            </div>
-        </div>
-        
-        <!-- Right Context Sidebar -->
-        <div class="context-sidebar">
-            <div class="context-section">
-                <h3>Scene Information</h3>
-                <div class="context-metadata">
-                    <div class="metadata-label">Location:</div>
-                    <div id="location-info">Zach's Place, Atlanta, 2045</div>
-                </div>
-                <div class="context-metadata">
-                    <div class="metadata-label">Timeline:</div>
-                    <div id="timeline-info">Evening before restaurant opening</div>
-                </div>
-                <div class="context-metadata">
-                    <div class="metadata-label">Themes:</div>
-                    <div class="thematic-tags" id="theme-tags">
-                        <div class="tag">human craftsmanship</div>
-                        <div class="tag">technological alienation</div>
-                        <div class="tag">family tension</div>
-                        <div class="tag">generational divide</div>
-                        <div class="tag">resistance to automation</div>
+                <div class="tool-body">
+                    <div class="tool-description">
+                        Create and edit detailed scenes with branching narratives, character POVs, and connected non-fiction content.
+                    </div>
+                    <div class="tool-features">
+                        <ul class="feature-list">
+                            <li class="feature-item">
+                                <span class="feature-icon"><i class="fas fa-check"></i></span>
+                                Rich narrative content editing
+                            </li>
+                            <li class="feature-item">
+                                <span class="feature-icon"><i class="fas fa-check"></i></span>
+                                Character perspectives & branch points
+                            </li>
+                            <li class="feature-item">
+                                <span class="feature-icon"><i class="fas fa-check"></i></span>
+                                Fiction-Nonfiction connections
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="tool-preview">
+                        <img src="https://via.placeholder.com/800x400/e7f2fa/2980b9?text=Scene+Editor+Preview" class="preview-image" alt="Scene Editor Preview">
+                    </div>
+                    <div class="tool-actions">
+                        <a href="node-editor.html" class="tool-button">
+                            <i class="fas fa-edit"></i> Open Scene Editor
+                        </a>
                     </div>
                 </div>
             </div>
-            
-            <div class="context-section">
-                <h3>Related Non-Fiction</h3>
-                <div class="related-content" id="related-nonfiction">
-                    <a href="#" class="related-link">Post-Scarcity Economy</a>
-                    <a href="#" class="related-link">AI Governance Systems</a>
-                    <a href="#" class="related-link">Human Purpose in an Automated World</a>
+
+            <!-- Critical Path Editor Card -->
+            <div class="tool-card critical-path-tool">
+                <div class="tool-header">
+                    <div class="tool-icon">
+                        <i class="fas fa-project-diagram"></i>
+                    </div>
+                    <div class="tool-title">Critical Path Editor <span class="status-indicator status-ready">Ready</span></div>
+                </div>
+                <div class="tool-body">
+                    <div class="tool-description">
+                        Organize the main narrative flow of your book, arranging chapters and scenes in a cohesive structure.
+                    </div>
+                    <div class="tool-features">
+                        <ul class="feature-list">
+                            <li class="feature-item">
+                                <span class="feature-icon"><i class="fas fa-check"></i></span>
+                                Chapter & scene organization
+                            </li>
+                            <li class="feature-item">
+                                <span class="feature-icon"><i class="fas fa-check"></i></span>
+                                Visual story structure planning
+                            </li>
+                            <li class="feature-item">
+                                <span class="feature-icon"><i class="fas fa-check"></i></span>
+                                Timeline view of narrative flow
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="tool-preview">
+                        <img src="https://via.placeholder.com/800x400/f0e6fa/8e44ad?text=Critical+Path+Editor+Preview" class="preview-image" alt="Critical Path Editor Preview">
+                    </div>
+                    <div class="tool-actions">
+                        <a href="critical-path-navigator.html" class="tool-button">
+                            <i class="fas fa-sitemap"></i> Open Critical Path Editor
+                        </a>
+                    </div>
                 </div>
             </div>
-            
-            <div class="context-section">
-                <h3>Character Perspectives</h3>
-                <div class="related-content" id="available-povs">
-                    <a href="#" class="related-link active">Zach (Current)</a>
-                    <a href="#" class="related-link">Nicole</a>
-                    <a href="#" class="related-link">Steve</a>
-                    <a href="#" class="related-link">Alec</a>
-                    <a href="#" class="related-link">Rhett (AI Generated)</a>
+
+            <!-- Reader Card -->
+            <div class="tool-card reader-tool">
+                <div class="tool-header">
+                    <div class="tool-icon">
+                        <i class="fas fa-glasses"></i>
+                    </div>
+                    <div class="tool-title">Interactive Reader <span class="status-indicator status-in-progress">In Progress</span></div>
+                </div>
+                <div class="tool-body">
+                    <div class="tool-description">
+                        Experience your book as readers will see it, with interactive elements, choice-based navigation, and alternative perspectives.
+                    </div>
+                    <div class="tool-features">
+                        <ul class="feature-list">
+                            <li class="feature-item">
+                                <span class="feature-icon"><i class="fas fa-check"></i></span>
+                                Preview reading experience
+                            </li>
+                            <li class="feature-item">
+                                <span class="feature-icon"><i class="fas fa-check"></i></span>
+                                Test narrative branches
+                            </li>
+                            <li class="feature-item">
+                                <span class="feature-icon"><i class="fas fa-check"></i></span>
+                                Switch between character POVs
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="tool-preview">
+                        <img src="https://via.placeholder.com/800x400/f2e6fa/9370db?text=Reader+Preview" class="preview-image" alt="Reader Preview">
+                    </div>
+                    <div class="tool-actions">
+                        <a href="reader-prototype.html" class="tool-button">
+                            <i class="fas fa-book-reader"></i> Open Reader
+                        </a>
+                    </div>
                 </div>
             </div>
-            
-            <div class="context-section">
-                <h3>Reading Path</h3>
-                <div class="related-content" id="reading-path">
-                    <a href="#" class="related-link">Chapter 1: A New Beginning</a>
-                    <a href="#" class="related-link active">Scene 1: Restaurant Test Run</a>
-                    <a href="#" class="related-link">Scene 2: Alec's Bedroom</a>
-                </div>
+        </div>
+    </main>
+
+    <footer>
+        <div>&copy; 2025 Life in 2045 - Interactive Book Project</div>
+        <div class="footer-links">
+            <a href="#" class="footer-link">About</a>
+            <a href="#" class="footer-link">Help</a>
+            <a href="#" class="footer-link">Contact</a>
+        </div>
+    </footer>
+
+    <!-- Welcome Modal - Shown on first visit -->
+    <div class="modal" id="welcome-modal" style="display: none;">
+        <div class="modal-content">
+            <button class="modal-close" id="close-modal">&times;</button>
+            <div class="modal-header">
+                <h2 class="modal-title">Welcome to Life in 2045</h2>
+            </div>
+            <div class="modal-body">
+                <p>Thank you for using the Life in 2045 Interactive Book Editor. This platform provides you with tools to create an engaging, interactive reading experience.</p>
+                <p>Here's how to get started:</p>
+                <ol>
+                    <li><strong>Scene Editor:</strong> Create detailed scenes with multiple character perspectives.</li>
+                    <li><strong>Critical Path Editor:</strong> Organize your book's main narrative structure.</li>
+                    <li><strong>Reader:</strong> Preview how readers will experience your book.</li>
+                </ol>
+                <p>Choose the tool that best fits your current task. You can switch between tools at any time.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-button primary" id="start-button">Get Started</button>
             </div>
         </div>
     </div>
 
-    <script src="js/nodeLoader.js"></script>
     <script>
-        // Simple implementation to demonstrate the reader interface
         document.addEventListener('DOMContentLoaded', function() {
-            const contentDisplay = document.getElementById('scene-content');
-            const loadingIndicator = document.getElementById('loading-indicator');
-            const povButtons = document.querySelectorAll('.pov-button');
-            
-            // Load initial content
-            loadContent('ch1-scene1-restaurant', 'Zach');
-            
-            // POV switching
-            povButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    const pov = this.getAttribute('data-pov');
-                    
-                    // Update active button
-                    povButtons.forEach(btn => btn.classList.remove('active'));
-                    this.classList.add('active');
-                    
-                    // Update breadcrumb
-                    document.querySelector('.breadcrumb-item:last-child').textContent = pov + "'s POV";
-                    
-                    // Update sidebar POV links
-                    document.querySelectorAll('#available-povs .related-link').forEach(link => {
-                        link.classList.remove('active');
-                        if (link.textContent.startsWith(pov)) {
-                            link.classList.add('active');
-                        }
-                    });
-                    
-                    // Load content for selected POV
-                    loadContent('ch1-scene1-restaurant', pov);
-                });
+            // Show welcome modal on first visit
+            const hasVisitedBefore = localStorage.getItem('hasVisitedBefore');
+            if (!hasVisitedBefore) {
+                document.getElementById('welcome-modal').style.display = 'flex';
+                localStorage.setItem('hasVisitedBefore', 'true');
+            }
+
+            // Modal close button
+            document.getElementById('close-modal').addEventListener('click', function() {
+                document.getElementById('welcome-modal').style.display = 'none';
             });
-            
-            // Navigation buttons
-            document.getElementById('next-button').addEventListener('click', function() {
-                // In a full implementation, this would navigate to the next node
-                alert('In a full implementation, this would navigate to the next scene in the sequence.');
+
+            // Get started button
+            document.getElementById('start-button').addEventListener('click', function() {
+                document.getElementById('welcome-modal').style.display = 'none';
             });
-            
-            // Function to load content
-            function loadContent(nodeId, pov) {
-                // Show loading indicator
-                loadingIndicator.style.display = 'block';
-                
-                // In a real implementation, this would fetch from the JSON file
-                // For demo purposes, we'll simulate a network request
-                setTimeout(() => {
-                    fetch(`content/fiction/ch1-scene1-${pov.toLowerCase()}.json`)
-                        .then(response => response.json())
-                        .then(data => {
-                            // Render content
-                            renderContent(data);
-                            // Hide loading indicator
-                            loadingIndicator.style.display = 'none';
-                        })
-                        .catch(error => {
-                            // For demo, use fallback content if file not found
-                            console.error('Error loading content:', error);
-                            renderFallbackContent(pov);
-                            loadingIndicator.style.display = 'none';
-                        });
-                }, 500); // Simulate network delay
-            }
-            
-            // Render the content from node data
-            function renderContent(nodeData) {
-                if (nodeData && nodeData.content && nodeData.content.text) {
-                    // Process the text to identify branch points
-                    const paragraphs = nodeData.content.text.split('\n\n');
-                    let htmlContent = '';
-                    
-                    paragraphs.forEach(paragraph => {
-                        // Check if this paragraph contains a branch point
-                        const isBranchPoint = nodeData.navigation && 
-                                             nodeData.navigation.branchPoints && 
-                                             nodeData.navigation.branchPoints.some(branch => 
-                                                 paragraph.includes(branch.triggerText));
-                        
-                        if (isBranchPoint) {
-                            htmlContent += `<div class="branch-point">${paragraph}</div>`;
-                        } else {
-                            htmlContent += `<p>${paragraph}</p>`;
-                        }
-                    });
-                    
-                    contentDisplay.innerHTML = htmlContent;
-                    
-                    // Set up branch point click handlers
-                    document.querySelectorAll('.branch-point').forEach(branchElement => {
-                        branchElement.addEventListener('click', function() {
-                            alert('In a full implementation, this would branch to follow a different character or storyline.');
-                        });
-                    });
-                    
-                    // Update metadata in sidebar if available
-                    if (nodeData.metadata) {
-                        if (nodeData.metadata.location) {
-                            document.getElementById('location-info').textContent = 
-                                nodeData.metadata.location.name;
-                        }
-                        
-                        if (nodeData.metadata.timeline) {
-                            document.getElementById('timeline-info').textContent = 
-                                nodeData.metadata.timeline;
-                        }
-                        
-                        if (nodeData.metadata.thematicTags) {
-                            const tagsContainer = document.getElementById('theme-tags');
-                            tagsContainer.innerHTML = '';
-                            nodeData.metadata.thematicTags.forEach(tag => {
-                                const tagElement = document.createElement('div');
-                                tagElement.className = 'tag';
-                                tagElement.textContent = tag;
-                                tagsContainer.appendChild(tagElement);
-                            });
-                        }
-                    }
-                } else {
-                    contentDisplay.innerHTML = '<p>Error loading content. Please try again.</p>';
-                }
-            }
-            
-            // Fallback content for demonstration
-            function renderFallbackContent(pov) {
-                // This would be replaced with actual content in the full implementation
-                let content = '';
-                
-                switch(pov) {
-                    case 'Zach':
-                        content = `<p>The restaurant was an island of warmth in a world of machine precision. Zach had designed it that way, from the antique brass fixtures to the mismatched wooden tables, each marked with years of stories. A deliberate contrast to the sterile, algorithmically optimized eateries outside, where AI chefs prepared nutritionally perfect meals with mechanical consistency. Here, the food had character. Here, it was made by human hands.</p>
-                        
-                        <p>Atlanta in 2045 was a city of seamless automation, a shining testament to the last two decades of societal upheaval and reconstruction. The economic collapse of the 2030s had forced a radical rethinking of governance and economy. Money was still in use, but its influence was waning. Traditional currency coexisted uneasily with emerging systems of collective demand and AI-managed distribution. The transition was fraught with tension, as some clung to the old ways while others embraced the new. Places like Zach's restaurant weren't supposed to exist—unoptimized, inefficient, deeply human. And yet, here it was.</p>
-                        
-                        <div class="branch-point"><p>Rhett, the server, approached their table with the first dish, a lacquered wooden tray bearing four plates. "Tonight's first offering," he announced with a grin, "is a fusion of tradition and rebellion: smoked lamb belly with saffron miso glaze, served over grits infused with black garlic and lab-grown truffle oil." He leaned in conspiratorially. "Every element of this dish was touched by human hands. No robots, no AI-guided plating. Just intuition and craftsmanship."</p></div>`;
-                        break;
-                        
-                    case 'Nicole':
-                        content = `<p>Nicole barely glanced up from the translucent display hovering over her wrist as the server placed the elaborately plated food before her. The interface pulsed gently with incoming data—project updates from her governance team, simulations running in the background, a brief from Trudy about the latest integration challenges. In a world where information was constant, her personal AI had already filtered what was most relevant, allowing her mind to stay partially engaged with the dinner unfolding before her.</p>
-                        
-                        <p>She observed the restaurant with a designer's eye—the deliberate inefficiencies, the analog warmth, the stubborn human touches that Zach had incorporated everywhere. Part of her appreciated the aesthetic rebellion, but another part calculated the resource allocation, the operational redundancies, the sheer statistical improbability of success in a world optimized for frictionless experience.</p>`;
-                        break;
-                        
-                    default:
-                        content = `<p>This is a placeholder for ${pov}'s perspective. In the full implementation, this would load from the corresponding JSON file.</p>`;
-                }
-                
-                contentDisplay.innerHTML = content;
-                
-                // Set up branch point click handlers
-                document.querySelectorAll('.branch-point').forEach(branchElement => {
-                    branchElement.addEventListener('click', function() {
-                        alert('In a full implementation, this would branch to follow a different character or storyline.');
-                    });
-                });
-            }
         });
     </script>
 </body>

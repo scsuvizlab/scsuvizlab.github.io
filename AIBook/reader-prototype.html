@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Life in 2045 - Interactive Reader</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --background-color: #f9f9f9;
+            --text-color: #333;
+            --border-color: #ddd;
+            --highlight-color: #fff8e1;
+            --highlight-border: #ffc107;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--background-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            display: flex;
+            width: 100%;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        /* Navigation Sidebar */
+        .sidebar {
+            width: 250px;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 30px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            padding-bottom: 15px;
+        }
+
+        .nav-section {
+            margin-bottom: 25px;
+        }
+
+        .nav-section h3 {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            opacity: 0.7;
+        }
+
+        .nav-button {
+            background: none;
+            border: none;
+            color: white;
+            padding: 8px 10px;
+            text-align: left;
+            width: 100%;
+            border-radius: 4px;
+            margin-bottom: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-button:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
+
+        .nav-button.active {
+            background-color: var(--secondary-color);
+        }
+
+        .nav-icon {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+
+        /* External Nav Section */
+        .external-nav {
+            margin-top: auto;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .external-nav-button {
+            background: none;
+            border: none;
+            color: white;
+            padding: 8px 10px;
+            text-align: left;
+            width: 100%;
+            border-radius: 4px;
+            margin-bottom: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+        }
+
+        .external-nav-button:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
+
+        /* Main Content Area */
+        .content-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Top Controls */
+        .controls-bar {
+            background-color: white;
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .pov-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .pov-button {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .pov-button.active {
+            background-color: var(--primary-color);
+        }
+
+        .pov-button:hover {
+            background-color: #2980b9;
+        }
+
+        .mode-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .mode-button {
+            background-color: #f0f0f0;
+            color: #333;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .mode-button:hover {
+            background-color: #e0e0e0;
+        }
+
+        .mode-button.active {
+            background-color: #e0e0e0;
+            font-weight: bold;
+        }
+
+        /* Content Display */
+        .content-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 40px 40px;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .chapter-title {
+            margin-bottom: 30px;
+        }
+
+        .chapter-title h1 {
+            margin-bottom: 5px;
+            color: var(--primary-color);
+        }
+
+        .chapter-title .subtitle {
+            font-style: italic;
+            color: #7f8c8d;
+        }
+
+        .scene-content {
+            font-size: 1.1rem;
+            line-height: 1.7;
+            text-align: justify;
+        }
+
+        .scene-content p {
+            margin-bottom: 1.2em;
+        }
+
+        .branch-point {
+            background-color: var(--highlight-color);
+            border-left: 3px solid var(--highlight-border);
+            padding: 12px 18px;
+            margin: 20px 0;
+            position: relative;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .branch-point:hover {
+            background-color: #fff0c8;
+        }
+
+        .branch-point:after {
+            content: "Branch Point";
+            position: absolute;
+            top: -10px;
+            left: 10px;
+            background-color: var(--highlight-border);
+            color: #000;
+            font-size: 0.8em;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            background-color: white;
+            padding: 15px 20px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .nav-button-large {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-button-large:hover {
+            background-color: #2980b9;
+        }
+
+        .nav-button-large:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+
+        /* Right Sidebar for Context Info */
+        .context-sidebar {
+            width: 300px;
+            border-left: 1px solid var(--border-color);
+            padding: 20px;
+            background-color: white;
+            overflow-y: auto;
+        }
+
+        .context-section {
+            margin-bottom: 30px;
+        }
+
+        .context-section h3 {
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--primary-color);
+        }
+
+        .context-metadata {
+            margin-bottom: 10px;
+        }
+
+        .metadata-label {
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .thematic-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .tag {
+            background-color: #e0e0e0;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 0.85em;
+        }
+
+        .related-content {
+            margin-top: 15px;
+        }
+
+        .related-link {
+            display: block;
+            padding: 8px 0;
+            color: var(--secondary-color);
+            text-decoration: none;
+            border-bottom: 1px solid #efefef;
+        }
+
+        .related-link:hover {
+            text-decoration: underline;
+        }
+
+        .breadcrumb-trail {
+            padding: 10px 0;
+            font-size: 0.9rem;
+            color: #777;
+            border-bottom: 1px solid #efefef;
+            margin-bottom: 15px;
+        }
+
+        .breadcrumb-item {
+            display: inline-block;
+        }
+
+        .breadcrumb-item:not(:last-child):after {
+            content: "›";
+            margin: 0 5px;
+        }
+
+        .loading-indicator {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: var(--secondary-color);
+            z-index: 1000;
+            animation: loadingBar 2s infinite;
+        }
+
+        @keyframes loadingBar {
+            0% { width: 0; }
+            50% { width: 50%; }
+            100% { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-indicator" id="loading-indicator"></div>
+    <div class="app-container">
+        <!-- Left Navigation Sidebar -->
+        <div class="sidebar">
+            <div class="logo">Life in 2045</div>
+            
+            <div class="nav-section">
+                <h3>Navigation</h3>
+                <button class="nav-button active">
+                    <i class="nav-icon fas fa-book-open"></i> Continue Reading
+                </button>
+                <button class="nav-button">
+                    <i class="nav-icon fas fa-list"></i> Chapter List
+                </button>
+                <button class="nav-button">
+                    <i class="nav-icon fas fa-bookmark"></i> Bookmarks
+                </button>
+            </div>
+            
+            <div class="nav-section">
+                <h3>Content Tracks</h3>
+                <button class="nav-button active">
+                    <i class="nav-icon fas fa-book"></i> Fiction
+                </button>
+                <button class="nav-button">
+                    <i class="nav-icon fas fa-brain"></i> Non-Fiction
+                </button>
+            </div>
+            
+            <div class="nav-section">
+                <h3>Characters</h3>
+                <button class="nav-button">
+                    <i class="nav-icon fas fa-user"></i> Zach
+                </button>
+                <button class="nav-button">
+                    <i class="nav-icon fas fa-user"></i> Nicole
+                </button>
+                <button class="nav-button">
+                    <i class="nav-icon fas fa-user"></i> Steve
+                </button>
+                <button class="nav-button">
+                    <i class="nav-icon fas fa-user"></i> Alec
+                </button>
+            </div>
+            
+            <div class="nav-section">
+                <h3>Settings</h3>
+                <button class="nav-button">
+                    <i class="nav-icon fas fa-cog"></i> Preferences
+                </button>
+                <button class="nav-button">
+                    <i class="nav-icon fas fa-question-circle"></i> Help
+                </button>
+            </div>
+            
+            <!-- External Navigation -->
+            <div class="external-nav">
+                <h3>Editor Tools</h3>
+                <button class="external-nav-button" id="scene-editor-btn">
+                    <i class="nav-icon fas fa-edit"></i> Scene Editor
+                </button>
+                <button class="external-nav-button" id="critical-path-btn">
+                    <i class="nav-icon fas fa-project-diagram"></i> Critical Path
+                </button>
+                <button class="external-nav-button" id="home-btn">
+                    <i class="nav-icon fas fa-home"></i> Home
+                </button>
+            </div>
+        </div>
+        
+        <!-- Main Content Area -->
+        <div class="content-area">
+            <!-- Top Controls Bar -->
+            <div class="controls-bar">
+                <div class="pov-controls">
+                    <button class="pov-button active" data-pov="Zach">Zach</button>
+                    <button class="pov-button" data-pov="Nicole">Nicole</button>
+                    <button class="pov-button" data-pov="Steve">Steve</button>
+                    <button class="pov-button" data-pov="Alec">Alec</button>
+                    <button class="pov-button" data-pov="Rhett">Rhett</button>
+                </div>
+                
+                <div class="mode-controls">
+                    <button class="mode-button" title="Text-to-Speech">
+                        <i class="fas fa-volume-up"></i>
+                    </button>
+                    <button class="mode-button" title="Generate Images">
+                        <i class="fas fa-image"></i>
+                    </button>
+                    <button class="mode-button active" title="Traditional Reading">
+                        <i class="fas fa-paragraph"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Content Display -->
+            <div class="content-container" id="content-display">
+                <div class="breadcrumb-trail">
+                    <div class="breadcrumb-item">Chapter 1</div>
+                    <div class="breadcrumb-item">Restaurant Scene</div>
+                    <div class="breadcrumb-item">Zach's POV</div>
+                </div>
+                
+                <div class="chapter-title">
+                    <h1>Chapter 1</h1>
+                    <div class="subtitle">A New Beginning</div>
+                </div>
+                
+                <div class="scene-content" id="scene-content">
+                    <!-- Content will be loaded here dynamically -->
+                    <p>Loading content...</p>
+                </div>
+            </div>
+            
+            <!-- Bottom Navigation -->
+            <div class="bottom-nav">
+                <button class="nav-button-large" id="prev-button" disabled>
+                    <i class="fas fa-arrow-left"></i> Previous
+                </button>
+                <button class="nav-button-large" id="next-button">
+                    Continue <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Right Context Sidebar -->
+        <div class="context-sidebar">
+            <div class="context-section">
+                <h3>Scene Information</h3>
+                <div class="context-metadata">
+                    <div class="metadata-label">Location:</div>
+                    <div id="location-info">Zach's Place, Atlanta, 2045</div>
+                </div>
+                <div class="context-metadata">
+                    <div class="metadata-label">Timeline:</div>
+                    <div id="timeline-info">Evening before restaurant opening</div>
+                </div>
+                <div class="context-metadata">
+                    <div class="metadata-label">Themes:</div>
+                    <div class="thematic-tags" id="theme-tags">
+                        <div class="tag">human craftsmanship</div>
+                        <div class="tag">technological alienation</div>
+                        <div class="tag">family tension</div>
+                        <div class="tag">generational divide</div>
+                        <div class="tag">resistance to automation</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="context-section">
+                <h3>Related Non-Fiction</h3>
+                <div class="related-content" id="related-nonfiction">
+                    <a href="#" class="related-link">Post-Scarcity Economy</a>
+                    <a href="#" class="related-link">AI Governance Systems</a>
+                    <a href="#" class="related-link">Human Purpose in an Automated World</a>
+                </div>
+            </div>
+            
+            <div class="context-section">
+                <h3>Character Perspectives</h3>
+                <div class="related-content" id="available-povs">
+                    <a href="#" class="related-link active">Zach (Current)</a>
+                    <a href="#" class="related-link">Nicole</a>
+                    <a href="#" class="related-link">Steve</a>
+                    <a href="#" class="related-link">Alec</a>
+                    <a href="#" class="related-link">Rhett (AI Generated)</a>
+                </div>
+            </div>
+            
+            <div class="context-section">
+                <h3>Reading Path</h3>
+                <div class="related-content" id="reading-path">
+                    <a href="#" class="related-link">Chapter 1: A New Beginning</a>
+                    <a href="#" class="related-link active">Scene 1: Restaurant Test Run</a>
+                    <a href="#" class="related-link">Scene 2: Alec's Bedroom</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simple implementation to demonstrate the reader interface
+        document.addEventListener('DOMContentLoaded', function() {
+            const contentDisplay = document.getElementById('scene-content');
+            const loadingIndicator = document.getElementById('loading-indicator');
+            const povButtons = document.querySelectorAll('.pov-button');
+            
+            // Load initial content
+            loadContent('ch1-scene1-restaurant', 'Zach');
+            
+            // POV switching
+            povButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const pov = this.getAttribute('data-pov');
+                    
+                    // Update active button
+                    povButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Update breadcrumb
+                    document.querySelector('.breadcrumb-item:last-child').textContent = pov + "'s POV";
+                    
+                    // Update sidebar POV links
+                    document.querySelectorAll('#available-povs .related-link').forEach(link => {
+                        link.classList.remove('active');
+                        if (link.textContent.startsWith(pov)) {
+                            link.classList.add('active');
+                        }
+                    });
+                    
+                    // Load content for selected POV
+                    loadContent('ch1-scene1-restaurant', pov);
+                });
+            });
+            
+            // Navigation buttons
+            document.getElementById('next-button').addEventListener('click', function() {
+                // In a full implementation, this would navigate to the next node
+                alert('In a full implementation, this would navigate to the next scene in the sequence.');
+            });
+            
+            // External navigation buttons
+            document.getElementById('scene-editor-btn').addEventListener('click', function() {
+                if (confirm('Go to the Scene Editor? You will leave the reader view.')) {
+                    window.location.href = 'node-editor.html';
+                }
+            });
+            
+            document.getElementById('critical-path-btn').addEventListener('click', function() {
+                if (confirm('Go to the Critical Path Editor? You will leave the reader view.')) {
+                    window.location.href = 'critical-path-navigator.html';
+                }
+            });
+            
+            document.getElementById('home-btn').addEventListener('click', function() {
+                if (confirm('Return to the home page? You will leave the reader view.')) {
+                    window.location.href = 'index.html';
+                }
+            });
+            
+            // Function to load content
+            function loadContent(nodeId, pov) {
+                // Show loading indicator
+                loadingIndicator.style.display = 'block';
+                
+                // In a real implementation, this would fetch from the JSON file
+                // For demo purposes, we'll simulate a network request
+                setTimeout(() => {
+                    // Attempt to fetch from a real JSON file
+                    // If not found, use fallback content
+                    const fallbackContent = getFallbackContent(pov);
+                    contentDisplay.innerHTML = fallbackContent;
+                    
+                    // Set up branch point click handlers
+                    document.querySelectorAll('.branch-point').forEach(branchElement => {
+                        branchElement.addEventListener('click', function() {
+                            alert('In a full implementation, this would branch to follow a different character or storyline.');
+                        });
+                    });
+                    
+                    // Hide loading indicator
+                    loadingIndicator.style.display = 'none';
+                }, 500); // Simulate network delay
+            }
+            
+            // Fallback content for demonstration
+            function getFallbackContent(pov) {
+                // This would be replaced with actual content in the full implementation
+                let content = '';
+                
+                switch(pov) {
+                    case 'Zach':
+                        content = `<p>The restaurant was an island of warmth in a world of machine precision. Zach had designed it that way, from the antique brass fixtures to the mismatched wooden tables, each marked with years of stories. A deliberate contrast to the sterile, algorithmically optimized eateries outside, where AI chefs prepared nutritionally perfect meals with mechanical consistency. Here, the food had character. Here, it was made by human hands.</p>
+                        
+                        <p>Atlanta in 2045 was a city of seamless automation, a shining testament to the last two decades of societal upheaval and reconstruction. The economic collapse of the 2030s had forced a radical rethinking of governance and economy. Money was still in use, but its influence was waning. Traditional currency coexisted uneasily with emerging systems of collective demand and AI-managed distribution. The transition was fraught with tension, as some clung to the old ways while others embraced the new. Places like Zach's restaurant weren't supposed to exist—unoptimized, inefficient, deeply human. And yet, here it was.</p>
+                        
+                        <div class="branch-point"><p>Rhett, the server, approached their table with the first dish, a lacquered wooden tray bearing four plates. "Tonight's first offering," he announced with a grin, "is a fusion of tradition and rebellion: smoked lamb belly with saffron miso glaze, served over grits infused with black garlic and lab-grown truffle oil." He leaned in conspiratorially. "Every element of this dish was touched by human hands. No robots, no AI-guided plating. Just intuition and craftsmanship."</p></div>`;
+                        break;
+                        
+                    case 'Nicole':
+                        content = `<p>Nicole barely glanced up from the translucent display hovering over her wrist as the server placed the elaborately plated food before her. The interface pulsed gently with incoming data—project updates from her governance team, simulations running in the background, a brief from Trudy about the latest integration challenges. In a world where information was constant, her personal AI had already filtered what was most relevant, allowing her mind to stay partially engaged with the dinner unfolding before her.</p>
+                        
+                        <p>She observed the restaurant with a designer's eye—the deliberate inefficiencies, the analog warmth, the stubborn human touches that Zach had incorporated everywhere. Part of her appreciated the aesthetic rebellion, but another part calculated the resource allocation, the operational redundancies, the sheer statistical improbability of success in a world optimized for frictionless experience.</p>`;
+                        break;
+                        
+                    case 'Steve':
+                        content = `<p>Steve watched his son with a mixture of pride and skepticism. The boy had talent, no question there. Anyone could see the care that went into every detail of this place—from the way the light bounced off the polished wood to how the menu had been crafted to showcase ingredients most people these days would never taste in their original form.</p>
+                        
+                        <p>But what was the damn point? This world wasn't built for places like this anymore. It wasn't built for people like him either. Everything now was smooth and efficient and antiseptic. The machines had won, not with the violent revolution all those old movies had imagined, but with a slow, inexorable creep into every aspect of human life.</p>
+                        
+                        <div class="branch-point"><p>"You know what I don't get?" Steve said suddenly, setting down his fork. "How does this even work? You don't have a job, Zach. Haven't had one in fifteen years. Nobody here is getting paid, and the food's free. So what the hell is keeping the lights on?"</p></div>`;
+                        break;
+                        
+                    case 'Alec':
+                        content = `<p>Alec forced himself to smile, but underneath it, his fingers twitched against the fabric of his pants, betraying his unease. Everything about this place felt like it had been side-loaded from another reality, something off-grid, unplugged from the clean predictability of the world he knew. The restaurant, with its deliberate imperfections and handcrafted authenticity, was foreign to Alec, an outlier in a life that had always been frictionless and optimized.</p>
+                        
+                        <p>He felt both isolated and smothered. His world was hyper-connected, every interaction filtered through AI, every action monitored and analyzed. And yet, despite the omnipresence of technology, he felt alone. He was constantly nudged, guided, shaped into what the system thought he should be, leaving little room for who he actually was. At the same time, there was no escaping the expectations placed on him—from his mother's vision of the future to his grandfather's lingering resentment of a world that no longer needed people like him.</p>
+                        
+                        <div class="branch-point"><p>As the conversation flowed around him, Alec's hand briefly dipped into his pocket. A silent gesture, unnoticed by the others. In that pocket, nestled beside his fingers, was something no one else knew about. A passenger, a presence waiting for its moment. A seed, waiting to be planted in the family home.</p></div>`;
+                        break;
+                        
+                    case 'Rhett':
+                        content = `<p>Rhett moved between the kitchen and the dining area with practiced ease, his steps light despite the weight of the wooden tray balanced on his palm. He'd been working with Zach for months now, preparing for this opening, learning the choreography of service that was equal parts performance and ritual. Unlike the automated delivery systems in most restaurants, here every movement was intentional, human, imperfect.</p>
+                        
+                        <p>He approached the family table with a sense of pride. This wasn't just any table—this was the owner's family, a living blueprint of the contradictions that had created this place. The mother, clearly still plugged into the digital world despite physically being present. The grandfather, radiating skepticism from every pore. The son, a teenage bundle of discomfort and ennui. And Zach himself, earnest and hopeful, the architect of this deliberate anachronism.</p>
+                        
+                        <div class="branch-point"><p>"Tonight's first offering," he announced with a grin that was both practiced and genuine, "is a fusion of tradition and rebellion: smoked lamb belly with saffron miso glaze, served over grits infused with black garlic and lab-grown truffle oil." He leaned in conspiratorially, knowing this moment was part of the restaurant's ethos. "Every element of this dish was touched by human hands. No robots, no AI-guided plating. Just intuition and craftsmanship."</p></div>`;
+                        break;
+                        
+                    default:
+                        content = `<p>This is a placeholder for ${pov}'s perspective. In the full implementation, this would load from the corresponding JSON file.</p>`;
+                }
+                
+                return content;
+            }
+        });
+    </script>
+</body>
+</html>

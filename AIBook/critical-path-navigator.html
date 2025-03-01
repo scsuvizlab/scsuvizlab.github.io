@@ -1,0 +1,1683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Life in 2045 - Critical Path Navigator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.26.0/cytoscape.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dagre/0.8.5/dagre.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/cytoscape-dagre@2.5.0/cytoscape-dagre.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --background-color: #f9f9f9;
+            --text-color: #333;
+            --border-color: #ddd;
+            --sidebar-width: 320px;
+            --header-height: 60px;
+            --chapter-color: #8e44ad;
+            --scene-color: #2980b9;
+            --critical-path-color: #ffd700;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Header */
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .app-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .header-button {
+            background-color: transparent;
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: background-color 0.2s;
+        }
+
+        .header-button:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
+
+        .view-toggle {
+            display: flex;
+            background-color: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-left: 20px;
+        }
+
+        .view-toggle-btn {
+            background: none;
+            border: none;
+            color: white;
+            padding: 6px 12px;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: all 0.2s;
+        }
+
+        .view-toggle-btn.active {
+            background-color: rgba(255,255,255,0.2);
+            opacity: 1;
+        }
+
+        /* Main layout */
+        .main-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Outline Panel */
+        .outline-panel {
+            width: var(--sidebar-width);
+            background-color: white;
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .outline-header {
+            padding: 15px;
+            background-color: #f8f8f8;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .outline-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: var(--primary-color);
+        }
+
+        .outline-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .outline-btn {
+            background: none;
+            border: none;
+            color: #777;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .outline-btn:hover {
+            background-color: #f0f0f0;
+            color: var(--primary-color);
+        }
+
+        .outline-tree {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+        }
+
+        .tree-node {
+            margin-bottom: 10px;
+        }
+
+        .chapter-node {
+            margin-bottom: 20px;
+        }
+
+        .chapter-header {
+            background-color: #f0f0f0;
+            border-left: 4px solid var(--chapter-color);
+            padding: 10px 12px;
+            cursor: pointer;
+            font-weight: bold;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chapter-header:hover {
+            background-color: #e8e8e8;
+        }
+
+        .chapter-title {
+            color: var(--primary-color);
+        }
+
+        .chapter-actions {
+            opacity: 0;
+            transition: opacity 0.2s;
+            display: flex;
+            gap: 8px;
+        }
+
+        .chapter-header:hover .chapter-actions {
+            opacity: 1;
+        }
+
+        .chapter-action-btn {
+            background: none;
+            border: none;
+            color: #777;
+            cursor: pointer;
+            font-size: 0.85rem;
+            padding: 2px;
+        }
+
+        .chapter-action-btn:hover {
+            color: var(--primary-color);
+        }
+
+        .chapter-scenes {
+            margin-left: 20px;
+            padding-top: 10px;
+        }
+
+        .scene-node {
+            background-color: white;
+            border: 1px solid #e0e0e0;
+            border-left: 3px solid var(--scene-color);
+            border-radius: 4px;
+            padding: 10px 12px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .scene-node:hover {
+            background-color: #f8f8f8;
+        }
+
+        .scene-node.active {
+            background-color: #f0f8ff;
+            border-color: var(--secondary-color);
+        }
+
+        .scene-title {
+            font-size: 0.95rem;
+        }
+
+        .scene-actions {
+            opacity: 0;
+            transition: opacity 0.2s;
+            display: flex;
+            gap: 8px;
+        }
+
+        .scene-node:hover .scene-actions {
+            opacity: 1;
+        }
+
+        .scene-action-btn {
+            background: none;
+            border: none;
+            color: #777;
+            cursor: pointer;
+            font-size: 0.85rem;
+            padding: 2px;
+        }
+
+        .scene-action-btn:hover {
+            color: var(--primary-color);
+        }
+
+        .add-scene-btn {
+            color: #777;
+            background-color: #f8f8f8;
+            border: 1px dashed #ccc;
+            padding: 8px 10px;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .add-scene-btn:hover {
+            background-color: #f0f0f0;
+            color: var(--secondary-color);
+            border-color: #bbb;
+        }
+
+        .add-chapter-btn {
+            color: #777;
+            background-color: #f8f8f8;
+            border: 1px dashed #ccc;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 0.95rem;
+            margin-top: 10px;
+            margin-bottom: 20px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .add-chapter-btn:hover {
+            background-color: #f0f0f0;
+            color: var(--chapter-color);
+            border-color: #bbb;
+        }
+
+        /* Graph area */
+        .graph-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #graph {
+            width: 100%;
+            height: 100%;
+            background-color: #fcfcfc;
+        }
+
+        /* Graph toolbar */
+        .graph-toolbar {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background-color: white;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            display: flex;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .graph-tool {
+            padding: 8px 10px;
+            cursor: pointer;
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: white;
+        }
+
+        .graph-tool:last-child {
+            border-right: none;
+        }
+
+        .graph-tool:hover {
+            background-color: #f0f0f0;
+        }
+
+        .graph-tool.active {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        /* Layout controls */
+        .layout-controls {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background-color: white;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+        }
+
+        .layout-btn {
+            padding: 8px 12px;
+            cursor: pointer;
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background-color: white;
+            font-size: 0.9rem;
+        }
+
+        .layout-btn:last-child {
+            border-right: none;
+        }
+
+        .layout-btn:hover {
+            background-color: #f0f0f0;
+        }
+
+        /* Status bar */
+        .status-bar {
+            height: 25px;
+            background-color: #f0f0f0;
+            border-top: 1px solid var(--border-color);
+            padding: 0 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        /* Node editor modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .modal-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: #777;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-footer {
+            padding: 15px 20px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .modal-button {
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .modal-button.primary {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+        }
+
+        .modal-button.secondary {
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+        }
+
+        /* Node/Chapter Create Form */
+        .form-section {
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            margin-bottom: 20px;
+        }
+
+        .form-section h3 {
+            margin-bottom: 12px;
+            font-size: 1rem;
+            color: var(--primary-color);
+        }
+
+        .form-row {
+            margin-bottom: 15px;
+        }
+
+        .form-row label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+
+        .form-row input,
+        .form-row select,
+        .form-row textarea {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .form-row textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        /* Context menu */
+        .context-menu {
+            position: absolute;
+            background-color: white;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            z-index: 100;
+            min-width: 160px;
+            display: none;
+        }
+
+        .context-menu.active {
+            display: block;
+        }
+
+        .context-menu-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.2s;
+        }
+
+        .context-menu-item:hover {
+            background-color: #f0f0f0;
+        }
+
+        .context-menu-separator {
+            height: 1px;
+            background-color: var(--border-color);
+            margin: 5px 0;
+        }
+
+        .context-menu-item i {
+            margin-right: 8px;
+            width: 16px;
+            text-align: center;
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: absolute;
+            background-color: rgba(0,0,0,0.8);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            pointer-events: none;
+            z-index: 1000;
+            display: none;
+        }
+
+        /* Timeline View */
+        .timeline-view {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 100px;
+            background-color: white;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .timeline-view.collapsed {
+            transform: translateY(90px);
+        }
+
+        .timeline-header {
+            padding: 5px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            background-color: #f8f8f8;
+        }
+
+        .timeline-title {
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .timeline-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #777;
+            padding: 2px 5px;
+        }
+
+        .timeline-content {
+            flex: 1;
+            overflow-x: auto;
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .timeline-item {
+            min-width: 120px;
+            height: 60px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-right: 15px;
+            padding: 8px;
+            background-color: #f8f8f8;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.85rem;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .timeline-item.chapter {
+            background-color: #f0e6fa;
+            border-color: var(--chapter-color);
+        }
+
+        .timeline-item.scene {
+            background-color: #e7f2fa;
+            border-color: var(--scene-color);
+        }
+
+        .timeline-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .timeline-item.active {
+            border-color: var(--secondary-color);
+            background-color: #e6f7ff;
+        }
+
+        .timeline-connection {
+            width: 15px;
+            height: 2px;
+            background-color: #ccc;
+            margin: 0 5px;
+        }
+
+        /* For breadcrumb navigation */
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            padding: 8px 15px;
+            background-color: #f8f8f8;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .breadcrumb-item {
+            font-size: 0.9rem;
+            color: #777;
+        }
+
+        .breadcrumb-item:not(:last-child)::after {
+            content: "/";
+            margin: 0 8px;
+            color: #ccc;
+        }
+
+        .breadcrumb-item:last-child {
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        .breadcrumb-item a {
+            color: #777;
+            text-decoration: none;
+        }
+
+        .breadcrumb-item a:hover {
+            color: var(--primary-color);
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="app-title">Life in 2045 - Critical Path Navigator</div>
+        <div class="header-actions">
+            <div class="view-toggle">
+                <button class="view-toggle-btn" id="outline-view-btn">
+                    <i class="fas fa-sitemap"></i> Outline
+                </button>
+                <button class="view-toggle-btn active" id="graph-view-btn">
+                    <i class="fas fa-project-diagram"></i> Visual
+                </button>
+            </div>
+            <button class="header-button" id="save-btn">
+                <i class="fas fa-save"></i> Save
+            </button>
+            <button class="header-button" id="export-btn">
+                <i class="fas fa-file-export"></i> Export
+            </button>
+            <button class="header-button" id="scene-editor-btn">
+                <i class="fas fa-edit"></i> Scene Editor
+            </button>
+            <button class="header-button" id="reader-btn">
+                <i class="fas fa-book-reader"></i> Reader
+            </button>
+            <button class="header-button" id="home-btn">
+                <i class="fas fa-home"></i> Home
+            </button>
+        </div>
+    </header>
+
+    <!-- Breadcrumb Navigation -->
+    <div class="breadcrumb">
+        <div class="breadcrumb-item"><a href="#">Project</a></div>
+        <div class="breadcrumb-item"><a href="#">Life in 2045</a></div>
+        <div class="breadcrumb-item">Critical Path</div>
+    </div>
+
+    <!-- Main container -->
+    <div class="main-container">
+        <!-- Outline Panel -->
+        <div class="outline-panel">
+            <div class="outline-header">
+                <div class="outline-title">Book Structure</div>
+                <div class="outline-actions">
+                    <button class="outline-btn" id="collapse-all-btn" title="Collapse All">
+                        <i class="fas fa-compress-alt"></i>
+                    </button>
+                    <button class="outline-btn" id="expand-all-btn" title="Expand All">
+                        <i class="fas fa-expand-alt"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="outline-tree" id="outline-tree">
+                <!-- Chapter 1 -->
+                <div class="chapter-node">
+                    <div class="chapter-header">
+                        <div class="chapter-title">Chapter 1: A New Beginning</div>
+                        <div class="chapter-actions">
+                            <button class="chapter-action-btn" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="chapter-action-btn" title="Add Scene">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="chapter-scenes">
+                        <div class="scene-node">
+                            <div class="scene-title">Scene 1: Restaurant Test Run</div>
+                            <div class="scene-actions">
+                                <button class="scene-action-btn" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="scene-action-btn" title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="scene-node active">
+                            <div class="scene-title">Scene 2: Alec's Bedroom</div>
+                            <div class="scene-actions">
+                                <button class="scene-action-btn" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="scene-action-btn" title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="scene-node">
+                            <div class="scene-title">Scene 3: Nicole's Work</div>
+                            <div class="scene-actions">
+                                <button class="scene-action-btn" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="scene-action-btn" title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="add-scene-btn">
+                            <i class="fas fa-plus-circle"></i> Add New Scene
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Chapter 2 -->
+                <div class="chapter-node">
+                    <div class="chapter-header">
+                        <div class="chapter-title">Chapter 2: Growing Tensions</div>
+                        <div class="chapter-actions">
+                            <button class="chapter-action-btn" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="chapter-action-btn" title="Add Scene">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="chapter-scenes">
+                        <div class="scene-node">
+                            <div class="scene-title">Scene 1: Steve's Morning</div>
+                            <div class="scene-actions">
+                                <button class="scene-action-btn" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="scene-action-btn" title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="scene-node">
+                            <div class="scene-title">Scene 2: Alec Meets Friend</div>
+                            <div class="scene-actions">
+                                <button class="scene-action-btn" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="scene-action-btn" title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="add-scene-btn">
+                            <i class="fas fa-plus-circle"></i> Add New Scene
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Add Chapter Button -->
+                <div class="add-chapter-btn">
+                    <i class="fas fa-plus-circle"></i> Add New Chapter
+                </div>
+            </div>
+        </div>
+
+        <!-- Graph area -->
+        <div class="graph-container">
+            <div id="graph"></div>
+            
+            <!-- Graph toolbar -->
+            <div class="graph-toolbar">
+                <div class="graph-tool" id="zoom-in-tool" title="Zoom In">
+                    <i class="fas fa-search-plus"></i>
+                </div>
+                <div class="graph-tool" id="zoom-out-tool" title="Zoom Out">
+                    <i class="fas fa-search-minus"></i>
+                </div>
+                <div class="graph-tool" id="zoom-fit-tool" title="Fit to View">
+                    <i class="fas fa-expand"></i>
+                </div>
+                <div class="graph-tool" id="pan-tool" title="Pan">
+                    <i class="fas fa-hand-paper"></i>
+                </div>
+            </div>
+            
+            <!-- Layout Controls -->
+            <div class="layout-controls">
+                <div class="layout-btn" id="horizontal-layout-btn">
+                    <i class="fas fa-arrows-alt-h"></i> Horizontal
+                </div>
+                <div class="layout-btn" id="vertical-layout-btn">
+                    <i class="fas fa-arrows-alt-v"></i> Vertical
+                </div>
+                <div class="layout-btn" id="grid-layout-btn">
+                    <i class="fas fa-th"></i> Grid
+                </div>
+            </div>
+            
+            <!-- Timeline View -->
+            <div class="timeline-view" id="timeline-view">
+                <div class="timeline-header">
+                    <div class="timeline-title">Story Timeline</div>
+                    <button class="timeline-toggle" id="timeline-toggle">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                </div>
+                <div class="timeline-content" id="timeline-content">
+                    <!-- Chapter 1 -->
+                    <div class="timeline-item chapter">
+                        <div>Chapter 1</div>
+                        <div>A New Beginning</div>
+                    </div>
+                    <!-- Scene 1 -->
+                    <div class="timeline-item scene">
+                        <div>Scene 1</div>
+                        <div>Restaurant Test</div>
+                    </div>
+                    <!-- Scene 2 -->
+                    <div class="timeline-item scene active">
+                        <div>Scene 2</div>
+                        <div>Alec's Bedroom</div>
+                    </div>
+                    <!-- Scene 3 -->
+                    <div class="timeline-item scene">
+                        <div>Scene 3</div>
+                        <div>Nicole's Work</div>
+                    </div>
+                    <!-- Chapter 2 -->
+                    <div class="timeline-item chapter">
+                        <div>Chapter 2</div>
+                        <div>Growing Tensions</div>
+                    </div>
+                    <!-- Scene 1 -->
+                    <div class="timeline-item scene">
+                        <div>Scene 1</div>
+                        <div>Steve's Morning</div>
+                    </div>
+                    <!-- Scene 2 -->
+                    <div class="timeline-item scene">
+                        <div>Scene 2</div>
+                        <div>Alec Meets Friend</div>
+                    </div>
+                    <!-- Chapter 3 -->
+                    <div class="timeline-item chapter">
+                        <div>Chapter 3</div>
+                        <div>Disruptions</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status bar -->
+    <div class="status-bar">
+        <div class="status-info" id="status-info">2 Chapters | 5 Scenes | Critical Path View</div>
+        <div class="status-selection" id="status-selection">Selected: Scene 2 - Alec's Bedroom</div>
+    </div>
+
+    <!-- Chapter Editor Modal -->
+    <div class="modal" id="chapter-editor-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="chapter-modal-title">Add New Chapter</div>
+                <button class="modal-close" id="close-chapter-modal">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-section">
+                    <h3>Chapter Information</h3>
+                    <div class="form-row">
+                        <label for="chapter-id">Chapter ID</label>
+                        <input type="text" id="chapter-id" placeholder="e.g., chapter-1">
+                    </div>
+                    <div class="form-row">
+                        <label for="chapter-number">Chapter Number</label>
+                        <input type="number" id="chapter-number" min="1" value="1">
+                    </div>
+                    <div class="form-row">
+                        <label for="chapter-title">Title</label>
+                        <input type="text" id="chapter-title" placeholder="Chapter Title">
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3>Content</h3>
+                    <div class="form-row">
+                        <label for="chapter-description">Description</label>
+                        <textarea id="chapter-description" placeholder="Brief description of this chapter..."></textarea>
+                    </div>
+                    <div class="form-row">
+                        <label for="chapter-goals">Story Goals</label>
+                        <textarea id="chapter-goals" placeholder="What should this chapter accomplish..."></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-button secondary" id="cancel-chapter-edit">Cancel</button>
+                <button class="modal-button primary" id="save-chapter-edit">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scene Editor Modal -->
+    <div class="modal" id="scene-editor-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="scene-modal-title">Add New Scene</div>
+                <button class="modal-close" id="close-scene-modal">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-section">
+                    <h3>Scene Information</h3>
+                    <div class="form-row">
+                        <label for="scene-id">Scene ID</label>
+                        <input type="text" id="scene-id" placeholder="e.g., ch1-scene1">
+                    </div>
+                    <div class="form-row">
+                        <label for="scene-number">Scene Number</label>
+                        <input type="number" id="scene-number" min="1" value="1">
+                    </div>
+                    <div class="form-row">
+                        <label for="scene-title">Title</label>
+                        <input type="text" id="scene-title" placeholder="Scene Title">
+                    </div>
+                    <div class="form-row">
+                        <label for="scene-pov">POV Character</label>
+                        <input type="text" id="scene-pov" placeholder="e.g., Alec">
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3>Content</h3>
+                    <div class="form-row">
+                        <label for="scene-description">Description</label>
+                        <textarea id="scene-description" placeholder="Brief description of this scene..."></textarea>
+                    </div>
+                    <div class="form-row">
+                        <label for="scene-content-brief">Content Summary</label>
+                        <textarea id="scene-content-brief" placeholder="Outline of what happens in this scene..."></textarea>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3>Scene Details</h3>
+                    <div class="form-row">
+                        <label for="scene-location">Location</label>
+                        <input type="text" id="scene-location" placeholder="Where this scene takes place">
+                    </div>
+                    <div class="form-row">
+                        <label for="scene-characters">Characters (comma separated)</label>
+                        <input type="text" id="scene-characters" placeholder="e.g., Alec, Nicole, Zach">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-button secondary" id="cancel-scene-edit">Cancel</button>
+                <button class="modal-button primary" id="save-scene-edit">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Context menu -->
+    <div class="context-menu" id="context-menu">
+        <div class="context-menu-item" id="context-edit">
+            <i class="fas fa-edit"></i> Edit
+        </div>
+        <div class="context-menu-item" id="context-view">
+            <i class="fas fa-eye"></i> View Details
+        </div>
+        <div class="context-menu-separator"></div>
+        <div class="context-menu-item" id="context-add-before">
+            <i class="fas fa-arrow-circle-up"></i> Add Scene Before
+        </div>
+        <div class="context-menu-item" id="context-add-after">
+            <i class="fas fa-arrow-circle-down"></i> Add Scene After
+        </div>
+        <div class="context-menu-separator"></div>
+        <div class="context-menu-item" id="context-delete">
+            <i class="fas fa-trash"></i> Delete
+        </div>
+    </div>
+
+    <!-- Tooltip -->
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Register cytoscape-dagre
+            cytoscape.use(cytoscapeDagre);
+            
+            // Initialize Cytoscape
+            const cy = window.cy = cytoscape({
+                container: document.getElementById('graph'),
+                style: [
+                    // Node styling
+                    {
+                        selector: 'node',
+                        style: {
+                            'background-color': 'data(backgroundColor)',
+                            'border-color': 'data(borderColor)',
+                            'border-width': 'data(borderWidth)',
+                            'width': 'data(width)',
+                            'height': 'data(height)',
+                            'shape': 'data(shape)',
+                            'label': 'data(label)',
+                            'text-valign': 'center',
+                            'text-halign': 'center',
+                            'font-size': '12px',
+                            'color': '#fff',
+                            'text-outline-width': 1,
+                            'text-outline-color': 'data(textOutlineColor)',
+                            'text-wrap': 'ellipsis',
+                            'text-max-width': '120px'
+                        }
+                    },
+                    // Chapter node styling
+                    {
+                        selector: 'node.chapter',
+                        style: {
+                            'background-color': '#8e44ad',
+                            'border-color': '#7d3c98',
+                            'shape': 'roundrectangle',
+                            'width': 160,
+                            'height': 45,
+                            'text-valign': 'center',
+                            'text-halign': 'center',
+                            'text-outline-color': '#7d3c98'
+                        }
+                    },
+                    // Scene node styling
+                    {
+                        selector: 'node.scene',
+                        style: {
+                            'background-color': '#2980b9',
+                            'border-color': '#2573a7',
+                            'shape': 'roundrectangle',
+                            'width': 140,
+                            'height': 40,
+                            'text-valign': 'center',
+                            'text-halign': 'center',
+                            'text-outline-color': '#2573a7'
+                        }
+                    },
+                    // Edge styling
+                    {
+                        selector: 'edge',
+                        style: {
+                            'width': 3,
+                            'line-color': '#ffd700',
+                            'target-arrow-color': '#ffd700',
+                            'target-arrow-shape': 'triangle',
+                            'curve-style': 'bezier',
+                            'arrow-scale': 1.2
+                        }
+                    },
+                    // Selected elements
+                    {
+                        selector: ':selected',
+                        style: {
+                            'border-width': 3,
+                            'border-color': '#e74c3c',
+                            'line-color': '#e74c3c',
+                            'target-arrow-color': '#e74c3c'
+                        }
+                    }
+                ],
+                layout: {
+                    name: 'dagre',
+                    rankDir: 'LR', // Left to right layout
+                    nodeSep: 80, // Distance between nodes
+                    rankSep: 120, // Distance between layers
+                    edgeSep: 10, // Distance between parallel edges
+                    fit: true, // Fit to viewport
+                    padding: 50 // Padding around the layout
+                }
+            });
+            
+            // Add the Dagre layout if not already loaded
+            // NOTE: This is no longer needed since we registered cytoscape-dagre above
+            // if (!cy.layout.layouts['dagre']) {
+            //     cytoscape.use(cytoscapeDagre);
+            // }
+            
+            // Define default node properties
+            const chapterNodeDefaults = {
+                backgroundColor: '#8e44ad',
+                borderColor: '#7d3c98',
+                textOutlineColor: '#7d3c98',
+                borderWidth: 2,
+                shape: 'roundrectangle',
+                width: 160,
+                height: 45
+            };
+            
+            const sceneNodeDefaults = {
+                backgroundColor: '#2980b9',
+                borderColor: '#2573a7',
+                textOutlineColor: '#2573a7',
+                borderWidth: 2,
+                shape: 'roundrectangle',
+                width: 140,
+                height: 40
+            };
+            
+            // Initialize sample data
+            initSampleData();
+            
+            // Initialize UI events
+            initUIEvents();
+            
+            // Initialize sample data with chapters and scenes
+            function initSampleData() {
+                // Add chapter nodes
+                const chapters = [
+                    { id: 'chapter-1', label: 'Chapter 1: A New Beginning' },
+                    { id: 'chapter-2', label: 'Chapter 2: Growing Tensions' },
+                    { id: 'chapter-3', label: 'Chapter 3: Disruptions' }
+                ];
+                
+                // Add scene nodes
+                const scenes = [
+                    { id: 'ch1-scene1', label: 'Scene 1: Restaurant', chapter: 'chapter-1' },
+                    { id: 'ch1-scene2', label: 'Scene 2: Alec\'s Bedroom', chapter: 'chapter-1' },
+                    { id: 'ch1-scene3', label: 'Scene 3: Nicole\'s Work', chapter: 'chapter-1' },
+                    { id: 'ch2-scene1', label: 'Scene 1: Steve\'s Morning', chapter: 'chapter-2' },
+                    { id: 'ch2-scene2', label: 'Scene 2: Alec Meets Friend', chapter: 'chapter-2' },
+                    { id: 'ch3-scene1', label: 'Scene 1: System Anomaly', chapter: 'chapter-3' }
+                ];
+                
+                // Add chapter nodes to the graph
+                chapters.forEach((chapter, index) => {
+                    cy.add({
+                        group: 'nodes',
+                        data: {
+                            id: chapter.id,
+                            label: chapter.label,
+                            ...chapterNodeDefaults,
+                            order: index
+                        },
+                        classes: 'chapter'
+                    });
+                });
+                
+                // Add scene nodes and connect to chapters
+                scenes.forEach((scene, index) => {
+                    cy.add({
+                        group: 'nodes',
+                        data: {
+                            id: scene.id,
+                            label: scene.label,
+                            ...sceneNodeDefaults,
+                            order: index,
+                            chapterId: scene.chapter
+                        },
+                        classes: 'scene'
+                    });
+                });
+                
+                // Create critical path connections between scenes
+                for (let i = 0; i < scenes.length - 1; i++) {
+                    cy.add({
+                        group: 'edges',
+                        data: {
+                            id: `edge-${scenes[i].id}-${scenes[i+1].id}`,
+                            source: scenes[i].id,
+                            target: scenes[i+1].id
+                        }
+                    });
+                }
+                
+                // Run the layout
+                cy.layout({
+                    name: 'dagre',
+                    rankDir: 'LR', // Left to right layout
+                    nodeSep: 80, // Distance between nodes
+                    rankSep: 120, // Distance between layers
+                    edgeSep: 10, // Distance between parallel edges
+                    fit: true, // Fit to viewport
+                    padding: 50 // Padding around the layout
+                }).run();
+            }
+            
+            // Initialize UI events
+            function initUIEvents() {
+                // View toggle buttons
+                document.getElementById('outline-view-btn').addEventListener('click', function() {
+                    this.classList.add('active');
+                    document.getElementById('graph-view-btn').classList.remove('active');
+                    // Toggle visibility of panels would be implemented here
+                });
+                
+                document.getElementById('graph-view-btn').addEventListener('click', function() {
+                    this.classList.add('active');
+                    document.getElementById('outline-view-btn').classList.remove('active');
+                    // Toggle visibility of panels would be implemented here
+                });
+                
+                // Graph toolbar buttons
+                document.getElementById('zoom-in-tool').addEventListener('click', function() {
+                    cy.zoom({
+                        level: cy.zoom() * 1.2,
+                        renderedPosition: { x: cy.width() / 2, y: cy.height() / 2 }
+                    });
+                });
+                
+                document.getElementById('zoom-out-tool').addEventListener('click', function() {
+                    cy.zoom({
+                        level: cy.zoom() * 0.8,
+                        renderedPosition: { x: cy.width() / 2, y: cy.height() / 2 }
+                    });
+                });
+                
+                document.getElementById('zoom-fit-tool').addEventListener('click', function() {
+                    cy.fit();
+                });
+                
+                document.getElementById('pan-tool').addEventListener('click', function() {
+                    // Toggle panning mode would be implemented here
+                });
+                
+                // Layout buttons
+                document.getElementById('horizontal-layout-btn').addEventListener('click', function() {
+                    cy.layout({
+                        name: 'dagre',
+                        rankDir: 'LR',
+                        animate: true,
+                        animationDuration: 500,
+                        fit: true,
+                        padding: 50
+                    }).run();
+                });
+                
+                document.getElementById('vertical-layout-btn').addEventListener('click', function() {
+                    cy.layout({
+                        name: 'dagre',
+                        rankDir: 'TB',
+                        animate: true,
+                        animationDuration: 500,
+                        fit: true,
+                        padding: 50
+                    }).run();
+                });
+                
+                document.getElementById('grid-layout-btn').addEventListener('click', function() {
+                    cy.layout({
+                        name: 'grid',
+                        animate: true,
+                        animationDuration: 500,
+                        fit: true,
+                        padding: 50
+                    }).run();
+                });
+                
+                // Timeline toggle button
+                document.getElementById('timeline-toggle').addEventListener('click', function() {
+                    const timelineView = document.getElementById('timeline-view');
+                    timelineView.classList.toggle('collapsed');
+                    
+                    // Update icon
+                    const icon = this.querySelector('i');
+                    if (timelineView.classList.contains('collapsed')) {
+                        icon.classList.remove('fa-chevron-down');
+                        icon.classList.add('fa-chevron-up');
+                    } else {
+                        icon.classList.remove('fa-chevron-up');
+                        icon.classList.add('fa-chevron-down');
+                    }
+                });
+                
+                // Timeline item click
+                document.querySelectorAll('.timeline-item').forEach(item => {
+                    item.addEventListener('click', function() {
+                        // Remove active class from all timeline items
+                        document.querySelectorAll('.timeline-item').forEach(i => i.classList.remove('active'));
+                        // Add active class to clicked item
+                        this.classList.add('active');
+                        
+                        // In a real implementation, this would select the corresponding node in the graph
+                        document.getElementById('status-selection').textContent = `Selected: ${this.textContent.trim()}`;
+                    });
+                });
+                
+                // Outline chapter headers (toggle expand/collapse)
+                document.querySelectorAll('.chapter-header').forEach(header => {
+                    header.addEventListener('click', function() {
+                        const scenes = this.nextElementSibling;
+                        scenes.style.display = scenes.style.display === 'none' ? 'block' : 'none';
+                    });
+                });
+                
+                // Scene node click in outline
+                document.querySelectorAll('.scene-node').forEach(node => {
+                    node.addEventListener('click', function() {
+                        // Remove active class from all scene nodes
+                        document.querySelectorAll('.scene-node').forEach(n => n.classList.remove('active'));
+                        // Add active class to clicked node
+                        this.classList.add('active');
+                        
+                        // In a real implementation, this would select the corresponding node in the graph
+                        const sceneTitle = this.querySelector('.scene-title').textContent;
+                        document.getElementById('status-selection').textContent = `Selected: ${sceneTitle}`;
+                    });
+                });
+                
+                // Add chapter button
+                document.querySelector('.add-chapter-btn').addEventListener('click', function() {
+                    openChapterModal('add');
+                });
+                
+                // Add scene buttons
+                document.querySelectorAll('.add-scene-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        openSceneModal('add');
+                    });
+                });
+                
+                // Collapse all button
+                document.getElementById('collapse-all-btn').addEventListener('click', function() {
+                    document.querySelectorAll('.chapter-scenes').forEach(scenes => {
+                        scenes.style.display = 'none';
+                    });
+                });
+                
+                // Expand all button
+                document.getElementById('expand-all-btn').addEventListener('click', function() {
+                    document.querySelectorAll('.chapter-scenes').forEach(scenes => {
+                        scenes.style.display = 'block';
+                    });
+                });
+                
+                // Chapter edit buttons
+                document.querySelectorAll('.chapter-action-btn').forEach(btn => {
+                    btn.addEventListener('click', function(event) {
+                        event.stopPropagation(); // Prevent chapter collapse/expand
+                        
+                        if (this.title === 'Edit') {
+                            openChapterModal('edit');
+                        } else if (this.title === 'Add Scene') {
+                            openSceneModal('add');
+                        }
+                    });
+                });
+                
+                // Scene edit buttons
+                document.querySelectorAll('.scene-action-btn').forEach(btn => {
+                    btn.addEventListener('click', function(event) {
+                        event.stopPropagation(); // Prevent scene selection
+                        
+                        if (this.title === 'Edit') {
+                            openSceneModal('edit');
+                        } else if (this.title === 'Delete') {
+                            if (confirm('Are you sure you want to delete this scene?')) {
+                                // Delete scene logic would be implemented here
+                                console.log('Delete scene');
+                            }
+                        }
+                    });
+                });
+                
+                // Modal close buttons
+                document.getElementById('close-chapter-modal').addEventListener('click', function() {
+                    document.getElementById('chapter-editor-modal').classList.remove('active');
+                });
+                
+                document.getElementById('close-scene-modal').addEventListener('click', function() {
+                    document.getElementById('scene-editor-modal').classList.remove('active');
+                });
+                
+                // Modal cancel buttons
+                document.getElementById('cancel-chapter-edit').addEventListener('click', function() {
+                    document.getElementById('chapter-editor-modal').classList.remove('active');
+                });
+                
+                document.getElementById('cancel-scene-edit').addEventListener('click', function() {
+                    document.getElementById('scene-editor-modal').classList.remove('active');
+                });
+                
+                // Modal save buttons
+                document.getElementById('save-chapter-edit').addEventListener('click', function() {
+                    // Save chapter logic would be implemented here
+                    console.log('Save chapter');
+                    document.getElementById('chapter-editor-modal').classList.remove('active');
+                });
+                
+                document.getElementById('save-scene-edit').addEventListener('click', function() {
+                    // Save scene logic would be implemented here
+                    console.log('Save scene');
+                    document.getElementById('scene-editor-modal').classList.remove('active');
+                });
+                
+                // Return to node editor button
+                document.getElementById('scene-editor-btn').addEventListener('click', function() {
+                    if (confirm('Go to the Scene Editor? Unsaved changes will be lost.')) {
+                        window.location.href = 'node-editor.html';
+                    }
+                });
+                
+                // Reader button
+                document.getElementById('reader-btn').addEventListener('click', function() {
+                    if (confirm('Go to the Reader? Unsaved changes will be lost.')) {
+                        window.location.href = 'reader-prototype.html';
+                    }
+                });
+                
+                // Home button
+                document.getElementById('home-btn').addEventListener('click', function() {
+                    if (confirm('Return to the home page? Unsaved changes will be lost.')) {
+                        window.location.href = 'index.html';
+                    }
+                });
+                
+                // Save button
+                document.getElementById('save-btn').addEventListener('click', function() {
+                    // Save project logic would be implemented here
+                    alert('Critical Path structure saved!');
+                });
+                
+                // Export button
+                document.getElementById('export-btn').addEventListener('click', function() {
+                    // Export project logic would be implemented here
+                    alert('In a full implementation, this would export the critical path structure to a file.');
+                });
+                
+                // Cytoscape node click event
+                cy.on('tap', 'node', function(event) {
+                    const node = event.target;
+                    
+                    // Select the node in the graph
+                    cy.elements().unselect();
+                    node.select();
+                    
+                    // Update status bar
+                    document.getElementById('status-selection').textContent = `Selected: ${node.data('label')}`;
+                    
+                    // In a real implementation, this would also select the corresponding node in the outline
+                });
+                
+                // Cytoscape context menu
+                cy.on('cxttap', 'node', function(event) {
+                    const node = event.target;
+                    const pos = event.renderedPosition;
+                    
+                    // Select the node
+                    cy.elements().unselect();
+                    node.select();
+                    
+                    // Show context menu
+                    showContextMenu(pos, node);
+                });
+            }
+            
+            // Function to open chapter editor modal
+            function openChapterModal(mode) {
+                // Set modal title
+                const modalTitle = document.getElementById('chapter-modal-title');
+                modalTitle.textContent = mode === 'add' ? 'Add New Chapter' : 'Edit Chapter';
+                
+                // If editing, populate form with chapter data
+                if (mode === 'edit') {
+                    // For demo purposes, we'll just use placeholder data
+                    document.getElementById('chapter-id').value = 'chapter-1';
+                    document.getElementById('chapter-number').value = '1';
+                    document.getElementById('chapter-title').value = 'A New Beginning';
+                    document.getElementById('chapter-description').value = 'This chapter introduces the main characters and the setting of 2045 Atlanta.';
+                    document.getElementById('chapter-goals').value = 'Establish family dynamics\nIntroduce the AI governance concept\nPlant seeds of Alec\'s rebellion';
+                } else {
+                    // Clear form for new chapter
+                    document.getElementById('chapter-id').value = '';
+                    document.getElementById('chapter-number').value = '1';
+                    document.getElementById('chapter-title').value = '';
+                    document.getElementById('chapter-description').value = '';
+                    document.getElementById('chapter-goals').value = '';
+                }
+                
+                // Show modal
+                document.getElementById('chapter-editor-modal').classList.add('active');
+            }
+            
+            // Function to open scene editor modal
+            function openSceneModal(mode) {
+                // Set modal title
+                const modalTitle = document.getElementById('scene-modal-title');
+                modalTitle.textContent = mode === 'add' ? 'Add New Scene' : 'Edit Scene';
+                
+                // If editing, populate form with scene data
+                if (mode === 'edit') {
+                    // For demo purposes, we'll just use placeholder data
+                    document.getElementById('scene-id').value = 'ch1-scene1';
+                    document.getElementById('scene-number').value = '1';
+                    document.getElementById('scene-title').value = 'Restaurant Test Run';
+                    document.getElementById('scene-pov').value = 'Zach';
+                    document.getElementById('scene-description').value = 'The family gathers at Zach\'s restaurant for a test dinner before the official opening.';
+                    document.getElementById('scene-content-brief').value = 'Zach presents his handcrafted food to the family. Nicole is distracted by work. Steve criticizes AI governance. Alec is disengaged and uncomfortable in the analog environment.';
+                    document.getElementById('scene-location').value = 'Zach\'s Place, Atlanta';
+                    document.getElementById('scene-characters').value = 'Zach, Nicole, Steve, Alec, Rhett';
+                } else {
+                    // Clear form for new scene
+                    document.getElementById('scene-id').value = '';
+                    document.getElementById('scene-number').value = '1';
+                    document.getElementById('scene-title').value = '';
+                    document.getElementById('scene-pov').value = '';
+                    document.getElementById('scene-description').value = '';
+                    document.getElementById('scene-content-brief').value = '';
+                    document.getElementById('scene-location').value = '';
+                    document.getElementById('scene-characters').value = '';
+                }
+                
+                // Show modal
+                document.getElementById('scene-editor-modal').classList.add('active');
+            }
+            
+            // Function to show context menu
+            function showContextMenu(position, node) {
+                const contextMenu = document.getElementById('context-menu');
+                
+                // Position the menu
+                contextMenu.style.left = position.x + 'px';
+                contextMenu.style.top = position.y + 'px';
+                
+                // Show/hide options based on node type
+                const isChapter = node.hasClass('chapter');
+                
+                // Show the menu
+                contextMenu.classList.add('active');
+                
+                // Add event listeners to menu items
+                document.getElementById('context-edit').onclick = function() {
+                    if (isChapter) {
+                        openChapterModal('edit');
+                    } else {
+                        openSceneModal('edit');
+                    }
+                    hideContextMenu();
+                };
+                
+                document.getElementById('context-view').onclick = function() {
+                    // View details logic would be implemented here
+                    alert(`View details for ${node.data('label')}`);
+                    hideContextMenu();
+                };
+                
+                document.getElementById('context-add-before').onclick = function() {
+                    openSceneModal('add');
+                    hideContextMenu();
+                };
+                
+                document.getElementById('context-add-after').onclick = function() {
+                    openSceneModal('add');
+                    hideContextMenu();
+                };
+                
+                document.getElementById('context-delete').onclick = function() {
+                    if (confirm(`Are you sure you want to delete ${node.data('label')}?`)) {
+                        // Delete node logic would be implemented here
+                        console.log('Delete node');
+                    }
+                    hideContextMenu();
+                };
+                
+                // Add a click handler to hide the menu when clicking outside
+                document.addEventListener('click', hideContextMenuOnClickOutside);
+            }
+            
+            // Function to hide context menu
+            function hideContextMenu() {
+                document.getElementById('context-menu').classList.remove('active');
+                document.removeEventListener('click', hideContextMenuOnClickOutside);
+            }
+            
+            // Function to hide context menu when clicking outside
+            function hideContextMenuOnClickOutside(event) {
+                const contextMenu = document.getElementById('context-menu');
+                if (!contextMenu.contains(event.target)) {
+                    hideContextMenu();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
