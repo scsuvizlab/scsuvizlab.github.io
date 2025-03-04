@@ -1,0 +1,411 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Evolution Timeline</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        
+        .timeline-container {
+            width: 100%;
+            height: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        
+        .timeline {
+            position: relative;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .timeline::after {
+            content: '';
+            position: absolute;
+            width: 6px;
+            background-color: #3498db;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            margin-left: -3px;
+        }
+        
+        .event-container {
+            padding: 10px 40px;
+            position: relative;
+            width: 50%;
+            box-sizing: border-box;
+        }
+        
+        .event-container::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: white;
+            border: 4px solid #3498db;
+            border-radius: 50%;
+            top: 15px;
+            z-index: 1;
+        }
+        
+        .left {
+            left: 0;
+        }
+        
+        .right {
+            left: 50%;
+        }
+        
+        .left::after {
+            right: -13px;
+        }
+        
+        .right::after {
+            left: -13px;
+        }
+        
+        .event {
+            padding: 20px;
+            background-color: white;
+            border-radius: 6px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        
+        .event h2 {
+            color: #3498db;
+            margin-top: 0;
+        }
+        
+        .event-content {
+            display: none;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+        
+        .character-perspectives {
+            display: none;
+            margin-top: 15px;
+        }
+        
+        .character-tab {
+            display: inline-block;
+            padding: 8px 12px;
+            background: #f1f1f1;
+            cursor: pointer;
+            margin-right: 5px;
+            border-radius: 4px;
+        }
+        
+        .character-tab.active {
+            background: #3498db;
+            color: white;
+        }
+        
+        .character-content {
+            display: none;
+            padding: 15px;
+            background: #f9f9f9;
+            margin-top: 10px;
+            border-radius: 4px;
+        }
+        
+        .read-more {
+            color: #3498db;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .timeline-controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .timeline-controls button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            margin: 0 5px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        
+        @media screen and (max-width: 768px) {
+            .timeline::after {
+                left: 31px;
+            }
+            
+            .event-container {
+                width: 100%;
+                padding-left: 70px;
+                padding-right: 25px;
+            }
+            
+            .event-container::after {
+                left: 18px;
+            }
+            
+            .left::after, .right::after {
+                left: 18px;
+            }
+            
+            .right {
+                left: 0%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="timeline-container">
+        <h1>AI Evolution Timeline: 1940s - 2045</h1>
+        
+        <div class="timeline-controls">
+            <button id="era-pioneers">Pioneers Era</button>
+            <button id="era-learning">Machine Learning Era</button>
+            <button id="era-deep">Deep Learning Era</button>
+            <button id="era-future">Future (2025-2045)</button>
+        </div>
+        
+        <div class="timeline">
+            <!-- Pioneers Era -->
+            <div class="event-container left" data-era="pioneers">
+                <div class="event">
+                    <h2>1950: The Turing Test</h2>
+                    <p>Alan Turing proposes a test to determine if a machine can exhibit intelligent behavior.</p>
+                    <span class="read-more">Read more...</span>
+                    <div class="event-content">
+                        <p>The Turing Test, proposed by Alan Turing in his paper "Computing Machinery and Intelligence," was designed to test a machine's ability to exhibit intelligent behavior equivalent to, or indistinguishable from, that of a human.</p>
+                        <img src="/api/placeholder/400/200" alt="Conceptual image of the Turing Test" />
+                    </div>
+                    <div class="character-perspectives">
+                        <div class="character-tab" data-character="nicole">Nicole</div>
+                        <div class="character-tab" data-character="zach">Zach</div>
+                        <div class="character-tab" data-character="steve">Steve</div>
+                        
+                        <div class="character-content" data-character="nicole">
+                            <p>"The Turing Test was revolutionary but simplistic. Today's systems have moved far beyond simple imitation to true reasoning capabilities. Still, Turing's insight about judging AI through its outputs rather than its processes remains fundamental to how we evaluate systems."</p>
+                        </div>
+                        
+                        <div class="character-content" data-character="zach">
+                            <p>"I've always found it interesting that we judge machines by how well they can trick us. Maybe that's why I still prefer human servers in my restaurant—there's something authentic that can't be simulated."</p>
+                        </div>
+                        
+                        <div class="character-content" data-character="steve">
+                            <p>"I remember when passing the Turing Test was considered the holy grail of AI. Now we have systems running our entire infrastructure that no human can fully understand. Be careful what you wish for!"</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="event-container right" data-era="pioneers">
+                <div class="event">
+                    <h2>1956: The Dartmouth Conference</h2>
+                    <p>The field of AI is officially founded at a workshop at Dartmouth College.</p>
+                    <span class="read-more">Read more...</span>
+                    <div class="event-content">
+                        <p>The Dartmouth Conference, officially the Dartmouth Summer Research Project on Artificial Intelligence, was hosted by John McCarthy and Marvin Minsky. This workshop is widely considered the founding event of artificial intelligence as a field.</p>
+                        <img src="/api/placeholder/400/200" alt="Dartmouth College" />
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Machine Learning Era -->
+            <div class="event-container left" data-era="learning">
+                <div class="event">
+                    <h2>1997: IBM's Deep Blue Defeats Kasparov</h2>
+                    <p>A computer defeats the world chess champion for the first time.</p>
+                    <span class="read-more">Read more...</span>
+                    <div class="event-content">
+                        <p>IBM's Deep Blue became the first computer chess-playing system to win both a chess game and a chess match against a reigning world champion under regular time controls.</p>
+                        <img src="/api/placeholder/400/200" alt="Deep Blue Chess Computer" />
+                    </div>
+                </div>
+            </div>
+            
+            <div class="event-container right" data-era="learning">
+                <div class="event">
+                    <h2>2011: IBM Watson Wins Jeopardy!</h2>
+                    <p>Watson defeats two of Jeopardy!'s greatest champions.</p>
+                    <span class="read-more">Read more...</span>
+                    <div class="event-content">
+                        <p>IBM's question answering system Watson competed on Jeopardy! against former winners Brad Rutter and Ken Jennings. Watson won the first place prize of $1 million.</p>
+                        <img src="/api/placeholder/400/200" alt="IBM Watson" />
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Deep Learning Era -->
+            <div class="event-container left" data-era="deep">
+                <div class="event">
+                    <h2>2012: ImageNet Breakthrough</h2>
+                    <p>Deep learning model achieves breakthrough in image recognition.</p>
+                    <span class="read-more">Read more...</span>
+                    <div class="event-content">
+                        <p>AlexNet, a deep convolutional neural network, achieved a top-5 error of 15.3% in the ImageNet Large Scale Visual Recognition Challenge, significantly outperforming the runner-up (26.2% error).</p>
+                        <img src="/api/placeholder/400/200" alt="Neural Network Visualization" />
+                    </div>
+                    <div class="character-perspectives">
+                        <div class="character-tab" data-character="nicole">Nicole</div>
+                        <div class="character-tab" data-character="steve">Steve</div>
+                        
+                        <div class="character-content" data-character="nicole">
+                            <p>"The ImageNet moment was when everything changed. Our visual systems today trace their lineage directly to those early convolutional networks. It's what enables our smart city infrastructure to 'see' and respond to the world."</p>
+                        </div>
+                        
+                        <div class="character-content" data-character="steve">
+                            <p>"People don't realize how suddenly this all happened. One day computers couldn't tell a cat from a dog, the next they were identifying people in crowds. That should have been a warning sign."</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="event-container right" data-era="deep">
+                <div class="event">
+                    <h2>2022: ChatGPT Released</h2>
+                    <p>OpenAI releases ChatGPT, bringing conversational AI to the mainstream.</p>
+                    <span class="read-more">Read more...</span>
+                    <div class="event-content">
+                        <p>ChatGPT, based on the GPT-3.5 architecture, was released to the public in November 2022 and gained over a million users within 5 days, demonstrating unprecedented public interest in conversational AI.</p>
+                        <img src="/api/placeholder/400/200" alt="ChatGPT Interface" />
+                    </div>
+                    <div class="character-perspectives">
+                        <div class="character-tab" data-character="nicole">Nicole</div>
+                        <div class="character-tab" data-character="zach">Zach</div>
+                        <div class="character-tab" data-character="steve">Steve</div>
+                        <div class="character-tab" data-character="alec">Alec</div>
+                        
+                        <div class="character-content" data-character="nicole">
+                            <p>"Looking back, ChatGPT was just a primitive ancestor of our current systems, but it was the first time the general public truly understood what was coming. That's when my career path became clear to me."</p>
+                        </div>
+                        
+                        <div class="character-content" data-character="zach">
+                            <p>"That was the beginning of the end for so many jobs. Customer service, content creation, basic coding—all started to disappear within months. My UBI story started right around then."</p>
+                        </div>
+                        
+                        <div class="character-content" data-character="steve">
+                            <p>"I remember the hype. Everyone thought it was so amazing, but few considered what would happen when these systems got even smarter. I was called a Luddite for raising concerns."</p>
+                        </div>
+                        
+                        <div class="character-content" data-character="alec">
+                            <p>"It's weird to think people used to type to these systems instead of just talking naturally like we do now. We learned about this in my History of Computing class."</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Future Era -->
+            <div class="event-container left" data-era="future">
+                <div class="event">
+                    <h2>2028: National AI Infrastructure Act</h2>
+                    <p>Legislation establishes framework for AI integration in critical infrastructure.</p>
+                    <span class="read-more">Read more...</span>
+                    <div class="event-content">
+                        <p>Following multiple system failures and cyberattacks, the National AI Infrastructure Act established mandatory safety standards, testing protocols, and resilience requirements for AI systems managing critical infrastructure.</p>
+                        <img src="/api/placeholder/400/200" alt="Smart City Infrastructure" />
+                    </div>
+                </div>
+            </div>
+            
+            <div class="event-container right" data-era="future">
+                <div class="event">
+                    <h2>2035: Universal Basic Income Implementation</h2>
+                    <p>National UBI program launched in response to AI-driven job displacement.</p>
+                    <span class="read-more">Read more...</span>
+                    <div class="event-content">
+                        <p>After widespread automation across service, transportation, and knowledge work sectors, the government implemented a comprehensive UBI program to address structural unemployment.</p>
+                        <img src="/api/placeholder/400/200" alt="UBI Card Concept" />
+                    </div>
+                    <div class="character-perspectives">
+                        <div class="character-tab" data-character="zach">Zach</div>
+                        
+                        <div class="character-content" data-character="zach">
+                            <p>"UBI saved me after my job disappeared, but it took years to rebuild my sense of purpose. That's why my restaurant is so important—it's about creating something with my own hands again, not just existing on government support."</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Show/hide detailed content
+        document.querySelectorAll('.read-more').forEach(button => {
+            button.addEventListener('click', function() {
+                const content = this.nextElementSibling;
+                const perspectives = content.nextElementSibling;
+                
+                if (content.style.display === 'block') {
+                    content.style.display = 'none';
+                    if (perspectives) perspectives.style.display = 'none';
+                    this.textContent = 'Read more...';
+                } else {
+                    content.style.display = 'block';
+                    if (perspectives) perspectives.style.display = 'block';
+                    this.textContent = 'Read less';
+                }
+            });
+        });
+        
+        // Character perspective tabs
+        document.querySelectorAll('.character-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                const character = this.dataset.character;
+                const parentDiv = this.parentElement;
+                
+                // Hide all character content
+                parentDiv.querySelectorAll('.character-content').forEach(content => {
+                    content.style.display = 'none';
+                });
+                
+                // Remove active class from all tabs
+                parentDiv.querySelectorAll('.character-tab').forEach(t => {
+                    t.classList.remove('active');
+                });
+                
+                // Show selected character content and activate tab
+                parentDiv.querySelector(`.character-content[data-character="${character}"]`).style.display = 'block';
+                this.classList.add('active');
+            });
+        });
+        
+        // Era filtering
+        document.querySelectorAll('.timeline-controls button').forEach(button => {
+            button.addEventListener('click', function() {
+                const era = this.id.split('-')[1];
+                
+                // Hide all events
+                document.querySelectorAll('.event-container').forEach(container => {
+                    container.style.display = 'none';
+                });
+                
+                // Show only events from selected era
+                document.querySelectorAll(`.event-container[data-era="${era}"]`).forEach(container => {
+                    container.style.display = 'block';
+                });
+                
+                // Highlight active button
+                document.querySelectorAll('.timeline-controls button').forEach(btn => {
+                    btn.style.fontWeight = 'normal';
+                });
+                this.style.fontWeight = 'bold';
+            });
+        });
+        
+        // Initialize: show all events
+        document.querySelectorAll('.event-container').forEach(container => {
+            container.style.display = 'block';
+        });
+    </script>
+</body>
+</html>
