@@ -1,0 +1,634 @@
+/* Styles specific to the node editor page */
+
+/* Header */
+.header-actions {
+    display: flex;
+    gap: 15px;
+}
+
+.header-button {
+    background-color: transparent;
+    border: 1px solid rgba(255,255,255,0.2);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: background-color 0.2s;
+}
+
+.header-button:hover {
+    background-color: rgba(255,255,255,0.1);
+}
+
+.app-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+/* Main layout */
+.main-container {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 280px;
+    background-color: white;
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.sidebar-section {
+    border-bottom: 1px solid var(--border-color);
+    padding: 15px;
+}
+
+.sidebar-section h2 {
+    font-size: 1rem;
+    margin-bottom: 15px;
+    color: var(--primary-color);
+}
+
+/* Node types */
+.node-types {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.node-type-button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background-color: #f8f8f8;
+    border: 1px solid var(--border-color);
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.node-type-button:hover {
+    border-color: var(--secondary-color);
+}
+
+.node-type-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.fiction-icon {
+    background-color: var(--fiction-color);
+}
+
+.nonfiction-icon {
+    background-color: var(--nonfiction-color);
+}
+
+.character-icon {
+    background-color: var(--character-color);
+}
+
+.interactive-icon {
+    background-color: var(--interactive-color);
+}
+
+.world-icon {
+    background-color: var(--world-color);
+}
+
+/* Node tools */
+.node-tools {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.tool-button {
+    background-color: #f8f8f8;
+    border: 1px solid var(--border-color);
+    padding: 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.tool-button:hover {
+    border-color: var(--secondary-color);
+    background-color: #f0f0f0;
+}
+
+.tool-button.active {
+    background-color: var(--secondary-color);
+    color: white;
+    border-color: var(--secondary-color);
+}
+
+/* Connection types */
+.connection-types {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.connection-type {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 5px 0;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.connection-type:hover {
+    background-color: #f0f0f0;
+}
+
+.connection-color {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+}
+
+.critical-path-color {
+    background-color: var(--critical-path-color);
+}
+
+.character-pov-color {
+    background-color: var(--character-pov-color);
+}
+
+.branch-point-color {
+    background-color: var(--branch-point-color);
+}
+
+.concept-sequence-color {
+    background-color: var(--concept-sequence-color);
+}
+
+.related-concept-color {
+    background-color: var(--related-concept-color);
+}
+
+.fiction-nonfiction-color {
+    background-color: var(--fiction-nonfiction-color);
+}
+
+.connection-label {
+    font-size: 0.9rem;
+}
+
+/* Properties panel */
+.properties-panel {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.properties-panel h2 {
+    font-size: 1rem;
+    margin-bottom: 15px;
+    color: var(--primary-color);
+}
+
+.properties-panel p {
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+    color: #777;
+}
+
+.property-group {
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 12px;
+    background-color: #f8f8f8;
+}
+
+.property-group h3 {
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+    color: var(--primary-color);
+}
+
+.property-field {
+    margin-bottom: 10px;
+}
+
+.property-field label {
+    display: block;
+    font-size: 0.85rem;
+    margin-bottom: 5px;
+    color: #555;
+}
+
+.property-field input, 
+.property-field select, 
+.property-field textarea {
+    width: 100%;
+    padding: 6px 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.property-field textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+
+.property-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.property-button {
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+.property-button.primary {
+    background-color: var(--secondary-color);
+    color: white;
+    border: none;
+}
+
+.property-button.secondary {
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+}
+
+/* Content Panel */
+.content-panel {
+    width: 350px;
+    background-color: white;
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: width 0.3s;
+}
+
+.content-panel.collapsed {
+    width: 0;
+    border: none;
+}
+
+.content-panel-header {
+    padding: 15px;
+    background-color: #f8f8f8;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.content-panel-title {
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.content-panel-controls {
+    display: flex;
+    gap: 10px;
+}
+
+.content-panel-section {
+    padding: 15px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.content-panel-section h3 {
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+    color: var(--primary-color);
+}
+
+.node-content-text {
+    max-height: 300px;
+    overflow-y: auto;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    white-space: pre-wrap;
+}
+
+.connection-list {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.connection-item {
+    padding: 8px 10px;
+    background-color: #f5f5f5;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.connection-item:hover {
+    background-color: #eaeaea;
+}
+
+.connection-item-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 8px;
+    flex-shrink: 0;
+}
+
+.character-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 10px;
+}
+
+.character-item {
+    padding: 5px 10px;
+    background-color: var(--character-color);
+    color: white;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+
+.branch-list {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.branch-item {
+    padding: 8px 10px;
+    background-color: rgba(255, 140, 0, 0.1);
+    border-left: 3px solid var(--branch-point-color);
+    border-radius: 4px;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+.branch-item:hover {
+    background-color: rgba(255, 140, 0, 0.2);
+}
+
+.toggle-panel-btn {
+    background: none;
+    border: none;
+    color: #777;
+    cursor: pointer;
+    padding: 5px;
+    transition: color 0.2s;
+}
+
+.toggle-panel-btn:hover {
+    color: var(--primary-color);
+}
+
+/* Graph area */
+.graph-container {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+}
+
+#graph {
+    width: 100%;
+    height: 100%;
+    background-color: #fcfcfc;
+}
+
+/* Graph toolbar */
+.graph-toolbar {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    background-color: white;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    display: flex;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.graph-tool {
+    padding: 8px 10px;
+    cursor: pointer;
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: white;
+}
+
+.graph-tool:last-child {
+    border-right: none;
+}
+
+.graph-tool:hover {
+    background-color: #f0f0f0;
+}
+
+.graph-tool.active {
+    background-color: var(--secondary-color);
+    color: white;
+}
+
+/* Status bar */
+.status-bar {
+    height: 25px;
+    background-color: #f0f0f0;
+    border-top: 1px solid var(--border-color);
+    padding: 0 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: #666;
+}
+
+/* Node editor form */
+.editor-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-section {
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 15px;
+    background-color: #f9f9f9;
+}
+
+.form-section h3 {
+    margin-bottom: 12px;
+    font-size: 1rem;
+    color: var(--primary-color);
+}
+
+.form-row {
+    margin-bottom: 15px;
+}
+
+.form-row label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+}
+
+.form-row input,
+.form-row select,
+.form-row textarea {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.form-row textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+/* Context menu */
+.context-menu {
+    position: absolute;
+    background-color: white;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    z-index: 100;
+    min-width: 160px;
+    display: none;
+}
+
+.context-menu.active {
+    display: block;
+}
+
+.context-menu-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.2s;
+}
+
+.context-menu-item:hover {
+    background-color: #f0f0f0;
+}
+
+.context-menu-separator {
+    height: 1px;
+    background-color: var(--border-color);
+    margin: 5px 0;
+}
+
+.context-menu-item i {
+    margin-right: 8px;
+    width: 16px;
+    text-align: center;
+}
+
+/* Tooltip */
+.tooltip {
+    position: absolute;
+    background-color: rgba(0,0,0,0.8);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    pointer-events: none;
+    z-index: 1000;
+    display: none;
+}
+
+/* Add connection mode UI */
+.connection-prompt {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background-color: rgba(52, 152, 219, 0.95);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 4px;
+    display: none;
+    font-size: 0.9rem;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    z-index: 10;
+}
+
+.connection-prompt.active {
+    display: block;
+}
+
+.connection-prompt-text {
+    margin-right: 10px;
+}
+
+.connection-close {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    opacity: 0.8;
+}
+
+.connection-close:hover {
+    opacity: 1;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+    .sidebar {
+        width: 240px;
+    }
+    
+    .content-panel {
+        width: 320px;
+    }
+}
+
+@media (max-width: 768px) {
+    .main-container {
+        flex-direction: column;
+    }
+    
+    .sidebar, .content-panel {
+        width: 100%;
+        max-height: 300px;
+    }
+}

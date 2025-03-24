@@ -1,0 +1,198 @@
+{
+  "title": "Life in 2045",
+  "author": "Your Name",
+  "version": "1.0",
+  "defaultStartNode": "preface-main",
+  "defaultPOV": "Omniscient",
+  
+  "criticalPath": [
+    {
+      "id": "preface-main",
+      "title": "Preface",
+      "type": "fiction",
+      "chapter": "preface",
+      "defaultPOV": "Omniscient",
+      "nextNode": "nf-knowledge-evolution",
+      "filePath": "critical_path/preface-main.json"
+    },
+    {
+      "id": "nf-knowledge-evolution",
+      "title": "Knowledge Evolution and AI",
+      "type": "nonfiction",
+      "chapter": "introduction",
+      "defaultPOV": "Omniscient",
+      "nextNode": "ch1-scene1-restaurant",
+      "filePath": "nonfiction/nf-knowledge-evolution.json"
+    },
+    {
+      "id": "ch1-scene1-restaurant",
+      "title": "The Island of Warmth",
+      "type": "fiction",
+      "chapter": "chapter1",
+      "defaultPOV": "Omniscient",
+      "nextNode": "ch1-scene2-alec-bedroom",
+      "filePath": "fiction/ch1-scene1-restaurant.json"
+    },
+    {
+      "id": "ch1-scene2-alec-bedroom",
+      "title": "Alec's Bedroom",
+      "type": "fiction",
+      "chapter": "chapter1",
+      "defaultPOV": "Alec",
+      "nextNode": "nf-interactive-knowledge",
+      "filePath": "fiction/ch1-scene2-alec-bedroom.json"
+    },
+    {
+      "id": "nf-interactive-knowledge",
+      "title": "Interactive Knowledge",
+      "type": "nonfiction",
+      "chapter": "chapter2",
+      "defaultPOV": "Omniscient",
+      "nextNode": "ch2-scene1-alec-at-school",
+      "filePath": "nonfiction/nf-interactive-knowledge.json"
+    },
+    {
+      "id": "ch2-scene1-alec-at-school",
+      "title": "Alec at School",
+      "type": "fiction",
+      "chapter": "chapter2",
+      "defaultPOV": "Alec",
+      "nextNode": "ch2-scene2-nicole-work",
+      "filePath": "fiction/ch2-scene1-alec-at-school.json"
+    },
+    {
+      "id": "ch2-scene2-nicole-work",
+      "title": "Nicole's Work",
+      "type": "fiction", 
+      "chapter": "chapter2",
+      "defaultPOV": "Nicole",
+      "nextNode": "nf-feedback-loops",
+      "filePath": "fiction/ch2-scene2-nicole-work.json"
+    },
+    {
+      "id": "nf-feedback-loops",
+      "title": "Feedback Loops",
+      "type": "nonfiction",
+      "chapter": "chapter3",
+      "defaultPOV": "Omniscient",
+      "nextNode": "ch3-scene1-steve-morning-scene",
+      "filePath": "nonfiction/nf-feedback-loops.json"
+    },
+    {
+      "id": "ch3-scene1-steve-morning-scene",
+      "title": "Steve's Morning",
+      "type": "fiction",
+      "chapter": "chapter3",
+      "defaultPOV": "Steve",
+      "nextNode": null,
+      "filePath": "fiction/ch3-scene1-steve-morning-scene.json"
+    }
+  ],
+  
+  "chapters": [
+    {
+      "id": "preface",
+      "title": "Preface",
+      "description": "Introduction to the book",
+      "startNode": "preface-main",
+      "nodes": ["preface-main"]
+    },
+    {
+      "id": "introduction",
+      "title": "Introduction: Knowledge Evolution",
+      "description": "Understanding the evolution of knowledge systems and AI's role",
+      "startNode": "nf-knowledge-evolution",
+      "nodes": ["nf-knowledge-evolution"]
+    },
+    {
+      "id": "chapter1",
+      "title": "A New Beginning",
+      "description": "Introduces the family and their conflicting worldviews",
+      "startNode": "ch1-scene1-restaurant",
+      "nodes": ["ch1-scene1-restaurant", "ch1-scene2-alec-bedroom"]
+    },
+    {
+      "id": "chapter2",
+      "title": "Digital Classroom",
+      "description": "Explores AI-driven education and human-AI co-creativity",
+      "startNode": "nf-interactive-knowledge",
+      "nodes": ["nf-interactive-knowledge", "ch2-scene1-alec-at-school", "ch2-scene2-nicole-work"]
+    },
+    {
+      "id": "chapter3",
+      "title": "Feedback Systems",
+      "description": "Examining feedback systems and their impact on society",
+      "startNode": "nf-feedback-loops",
+      "nodes": ["nf-feedback-loops", "ch3-scene1-steve-morning-scene"]
+    }
+  ],
+  
+  "characterPOVs": {
+    "ch1-scene1-restaurant": [
+      {"character": "Alec", "nodeId": "ch1-scene1-alec-pov", "filePath": "fiction/character_povs/ch1-scene1-alec-pov.json"},
+      {"character": "Nicole", "nodeId": "ch1-scene1-nicole-pov", "filePath": "fiction/character_povs/ch1-scene1-nicole-pov.json"},
+      {"character": "Steve", "nodeId": "ch1-scene1-steve-pov", "filePath": "fiction/character_povs/ch1-scene1-steve-pov.json"},
+      {"character": "Zach", "nodeId": "ch1-scene1-zach-pov", "filePath": "fiction/character_povs/ch1-scene1-zach-pov.json"}
+    ]
+  },
+  
+  "relatedContent": {
+    "ch1-scene1-restaurant": ["nf-knowledge-evolution"],
+    "ch1-scene2-alec-bedroom": ["nf-interactive-knowledge"],
+    "nf-interactive-knowledge": ["ch2-scene1-alec-at-school", "ch2-scene2-nicole-work"],
+    "ch2-scene2-nicole-work": ["nf-feedback-loops"],
+    "nf-feedback-loops": ["ch3-scene1-steve-morning-scene"]
+  },
+  
+  "tracks": {
+    "fiction": {
+      "name": "Narrative Track",
+      "description": "Follow the story of the family in chronological order",
+      "startNode": "ch1-scene1-restaurant",
+      "nodeSequence": [
+        "ch1-scene1-restaurant", 
+        "ch1-scene2-alec-bedroom",
+        "ch2-scene1-alec-at-school",
+        "ch2-scene2-nicole-work",
+        "ch3-scene1-steve-morning-scene"
+      ]
+    },
+    "nonfiction": {
+      "name": "Concepts & Context",
+      "description": "Explore the ideas and technology behind the story",
+      "startNode": "nf-knowledge-evolution",
+      "nodeSequence": [
+        "nf-knowledge-evolution",
+        "nf-interactive-knowledge",
+        "nf-feedback-loops"
+      ]
+    }
+  },
+  
+  "characters": [
+    {
+      "id": "steve",
+      "name": "Steve",
+      "type": "primary",
+      "description": "Father, traditionalist restaurant owner"
+    },
+    {
+      "id": "nicole",
+      "name": "Nicole",
+      "type": "primary",
+      "description": "Mother, AI governance architect"
+    },
+    {
+      "id": "alec",
+      "name": "Alec",
+      "type": "primary",
+      "description": "Teenage son, digital native"
+    },
+    {
+      "id": "zach",
+      "name": "Zach",
+      "type": "primary",
+      "description": "Nicole's husband, restaurant owner"
+    }
+  ]
+}

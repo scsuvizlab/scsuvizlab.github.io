@@ -1,0 +1,200 @@
+/* Common styles used across all pages */
+:root {
+    --primary-color: #2c3e50;
+    --secondary-color: #3498db;
+    --accent-color: #e74c3c;
+    --background-color: #f9f9f9;
+    --text-color: #333;
+    --card-background: #fff;
+    --card-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    --card-border: 1px solid rgba(0,0,0,0.05);
+    --border-color: #ddd;
+    
+    /* Node colors */
+    --fiction-color: #6ecff6;
+    --nonfiction-color: #9370db;
+    --character-color: #20b2aa;
+    --interactive-color: #ba55d3;
+    --world-color: #cd853f;
+    
+    /* Edge colors */
+    --critical-path-color: #ffd700;
+    --character-pov-color: #6ecff6;
+    --branch-point-color: #ff8c00;
+    --concept-sequence-color: #9370db;
+    --related-concept-color: #3cb371;
+    --fiction-nonfiction-color: #ff69b4;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+header {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 1.5rem 2rem;
+    text-align: center;
+}
+
+main {
+    flex: 1;
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+footer {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 1.5rem 2rem;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+/* Welcome modal */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    width: 90%;
+    max-width: 600px;
+    position: relative;
+}
+
+.modal-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.modal-title {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.modal-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #e0e0e0;
+    text-align: right;
+}
+
+.modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #777;
+}
+
+.modal-button {
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.modal-button.primary {
+    background-color: var(--secondary-color);
+    color: white;
+}
+
+/* Loading overlay */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255,255,255,0.8);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+
+.loading-overlay.active {
+    display: flex;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid var(--secondary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 15px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+    font-size: 1rem;
+    color: var(--primary-color);
+}
+
+/* Common button styles */
+.button {
+    background-color: var(--secondary-color);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.button:hover {
+    background-color: #2980b9;
+}
+
+.button-secondary {
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    color: var(--text-color);
+}
+
+.button-secondary:hover {
+    background-color: #e0e0e0;
+}

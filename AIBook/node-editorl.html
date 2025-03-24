@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Life in 2045 - Node-Based Editor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/node-editor.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.26.0/cytoscape.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="app-title">Life in 2045 - Scene Editor</div>
+        <div class="header-actions">
+            <button class="header-button" id="home-btn">
+                <i class="fas fa-home"></i> Home
+            </button>
+            <button class="header-button" id="critical-path-btn">
+                <i class="fas fa-project-diagram"></i> Critical Path
+            </button>
+            <button class="header-button" id="reader-btn">
+                <i class="fas fa-book-reader"></i> Reader
+            </button>
+            <button class="header-button" id="new-project-btn">
+                <i class="fas fa-file"></i> New
+            </button>
+            <button class="header-button" id="open-project-btn">
+                <i class="fas fa-folder-open"></i> Open
+            </button>
+            <button class="header-button" id="save-project-btn">
+                <i class="fas fa-save"></i> Save
+            </button>
+            <button class="header-button" id="export-project-btn">
+                <i class="fas fa-file-export"></i> Export
+            </button>
+        </div>
+    </header>
+
+    <!-- Main container -->
+    <div class="main-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <!-- Node types -->
+            <div class="sidebar-section">
+                <h2>Node Types</h2>
+                <div class="node-types">
+                    <div class="node-type-button" data-node-type="fiction">
+                        <div class="node-type-icon fiction-icon">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <span>Fiction Node</span>
+                    </div>
+                    <div class="node-type-button" data-node-type="nonfiction">
+                        <div class="node-type-icon nonfiction-icon">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <span>Non-Fiction Node</span>
+                    </div>
+                    <div class="node-type-button" data-node-type="character">
+                        <div class="node-type-icon character-icon">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <span>Character Profile</span>
+                    </div>
+                    <div class="node-type-button" data-node-type="interactive">
+                        <div class="node-type-icon interactive-icon">
+                            <i class="fas fa-gamepad"></i>
+                        </div>
+                        <span>Interactive Element</span>
+                    </div>
+                    <div class="node-type-button" data-node-type="world">
+                        <div class="node-type-icon world-icon">
+                            <i class="fas fa-globe"></i>
+                        </div>
+                        <span>World Entity</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tools -->
+            <div class="sidebar-section">
+                <h2>Tools</h2>
+                <div class="node-tools">
+                    <div class="tool-button active" id="select-tool" title="Select">
+                        <i class="fas fa-mouse-pointer"></i>
+                    </div>
+                    <div class="tool-button" id="connect-tool" title="Connect Nodes">
+                        <i class="fas fa-link"></i>
+                    </div>
+                    <div class="tool-button" id="pan-tool" title="Pan">
+                        <i class="fas fa-hand-paper"></i>
+                    </div>
+                    <div class="tool-button" id="group-tool" title="Group Nodes">
+                        <i class="fas fa-object-group"></i>
+                    </div>
+                    <div class="tool-button" id="note-tool" title="Add Note">
+                        <i class="fas fa-sticky-note"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Connection types -->
+            <div class="sidebar-section">
+                <h2>Connection Types</h2>
+                <div class="connection-types">
+                    <div class="connection-type" data-connection-type="critical-path">
+                        <div class="connection-color critical-path-color"></div>
+                        <span class="connection-label">Critical Path</span>
+                    </div>
+                    <div class="connection-type" data-connection-type="character-pov">
+                        <div class="connection-color character-pov-color"></div>
+                        <span class="connection-label">Character POV</span>
+                    </div>
+                    <div class="connection-type" data-connection-type="branch-point">
+                        <div class="connection-color branch-point-color"></div>
+                        <span class="connection-label">Branch Point</span>
+                    </div>
+                    <div class="connection-type" data-connection-type="concept-sequence">
+                        <div class="connection-color concept-sequence-color"></div>
+                        <span class="connection-label">Concept Sequence</span>
+                    </div>
+                    <div class="connection-type" data-connection-type="related-concept">
+                        <div class="connection-color related-concept-color"></div>
+                        <span class="connection-label">Related Concept</span>
+                    </div>
+                    <div class="connection-type" data-connection-type="fiction-nonfiction">
+                        <div class="connection-color fiction-nonfiction-color"></div>
+                        <span class="connection-label">Fiction-Nonfiction Link</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Properties Panel -->
+            <div class="properties-panel">
+                <h2>Properties</h2>
+                <p id="no-selection-message">Select a node or connection to view properties</p>
+                
+                <!-- Node properties (hidden by default) -->
+                <div id="node-properties" style="display: none;">
+                    <div class="property-group">
+                        <h3>Node Information</h3>
+                        <div class="property-field">
+                            <label for="node-id">Node ID</label>
+                            <input type="text" id="node-id" placeholder="e.g., ch1-scene1-classroom">
+                        </div>
+                        <div class="property-field">
+                            <label for="node-title">Title</label>
+                            <input type="text" id="node-title" placeholder="Node Title">
+                        </div>
+                    </div>
+                    
+                    <div class="property-group">
+                        <h3>Content</h3>
+                        <div class="property-field">
+                            <label for="node-description">Description</label>
+                            <textarea id="node-description" placeholder="Brief description of this node"></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="property-actions">
+                        <button class="property-button secondary" id="node-delete-btn">Delete</button>
+                        <button class="property-button primary" id="node-edit-btn">Edit</button>
+                    </div>
+                </div>
+                
+                <!-- Edge properties (hidden by default) -->
+                <div id="edge-properties" style="display: none;">
+                    <div class="property-group">
+                        <h3>Connection Information</h3>
+                        <div class="property-field">
+                            <label for="edge-type">Connection Type</label>
+                            <select id="edge-type">
+                                <option value="critical-path">Critical Path</option>
+                                <option value="character-pov">Character POV</option>
+                                <option value="branch-point">Branch Point</option>
+                                <option value="concept-sequence">Concept Sequence</option>
+                                <option value="related-concept">Related Concept</option>
+                                <option value="fiction-nonfiction">Fiction-Nonfiction Link</option>
+                            </select>
+                        </div>
+                        <div class="property-field">
+                            <label for="edge-label">Label (Optional)</label>
+                            <input type="text" id="edge-label" placeholder="e.g., Next chapter">
+                        </div>
+                    </div>
+                    
+                    <div class="property-actions">
+                        <button class="property-button secondary" id="edge-delete-btn">Delete</button>
+                        <button class="property-button primary" id="edge-update-btn">Update</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Content Panel -->
+        <div class="content-panel" id="content-panel">
+            <div class="content-panel-header">
+                <div class="content-panel-title" id="content-panel-title">Node Content</div>
+                <div class="content-panel-controls">
+                    <button class="toggle-panel-btn" id="toggle-panel-btn" title="Toggle panel">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Node Text Content -->
+            <div class="content-panel-section">
+                <h3>Content</h3>
+                <div class="node-content-text" id="node-content-text">
+                    Select a node to view its content
+                </div>
+            </div>
+            
+            <!-- Characters -->
+            <div class="content-panel-section" id="characters-section">
+                <h3>Characters</h3>
+                <div class="character-list" id="character-list">
+                    <!-- Characters will be inserted here -->
+                </div>
+            </div>
+            
+            <!-- Branch Points -->
+            <div class="content-panel-section" id="branches-section">
+                <h3>Branch Points</h3>
+                <div class="branch-list" id="branch-list">
+                    <!-- Branch points will be inserted here -->
+                </div>
+            </div>
+            
+            <!-- Connections -->
+            <div class="content-panel-section">
+                <h3>Connections</h3>
+                <div class="connection-list" id="outgoing-connections">
+                    <!-- Connections will be inserted here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Graph area -->
+        <div class="graph-container">
+            <div id="graph"></div>
+            
+            <!-- Graph toolbar -->
+            <div class="graph-toolbar">
+                <div class="graph-tool" id="zoom-in-tool" title="Zoom In">
+                    <i class="fas fa-search-plus"></i>
+                </div>
+                <div class="graph-tool" id="zoom-out-tool" title="Zoom Out">
+                    <i class="fas fa-search-minus"></i>
+                </div>
+                <div class="graph-tool" id="zoom-fit-tool" title="Fit to View">
+                    <i class="fas fa-expand"></i>
+                </div>
+                <div class="graph-tool" id="grid-toggle-tool" title="Toggle Grid">
+                    <i class="fas fa-th"></i>
+                </div>
+            </div>
+            
+            <!-- Connection prompt -->
+            <div class="connection-prompt" id="connection-prompt">
+                <span class="connection-prompt-text">Select target node to create connection</span>
+                <button class="connection-close" id="cancel-connection">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status bar -->
+    <div class="status-bar">
+        <div class="status-info" id="status-info">Ready</div>
+        <div class="status-nodes" id="status-nodes">Nodes: 0</div>
+    </div>
+
+    <!-- Node editor modal -->
+    <div class="modal" id="node-editor-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="modal-title">Edit Node</div>
+                <button class="modal-close" id="close-modal">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="editor-form" id="fiction-form">
+                    <div class="form-section">
+                        <h3>Basic Information</h3>
+                        <div class="form-row">
+                            <label for="fiction-id">Node ID</label>
+                            <input type="text" id="fiction-id" placeholder="e.g., ch1-scene1-classroom">
+                        </div>
+                        <div class="form-row">
+                            <label for="fiction-title">Title</label>
+                            <input type="text" id="fiction-title" placeholder="Scene Title">
+                        </div>
+                        <div class="form-row">
+                            <label for="fiction-pov">POV Character</label>
+                            <input type="text" id="fiction-pov" placeholder="e.g., Alec">
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h3>Content</h3>
+                        <div class="form-row">
+                            <label for="fiction-content">Scene Text</label>
+                            <textarea id="fiction-content" placeholder="The scene content..."></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h3>Metadata</h3>
+                        <div class="form-row">
+                            <label for="fiction-location">Location</label>
+                            <input type="text" id="fiction-location" placeholder="e.g., Zach's Restaurant, Atlanta">
+                        </div>
+                        <div class="form-row">
+                            <label for="fiction-timeline">Timeline</label>
+                            <input type="text" id="fiction-timeline" placeholder="e.g., 2045-Evening">
+                        </div>
+                        <div class="form-row">
+                            <label for="fiction-tags">Thematic Tags (comma separated)</label>
+                            <input type="text" id="fiction-tags" placeholder="e.g., human craftsmanship, family tension">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="editor-form" id="nonfiction-form" style="display: none;">
+                    <div class="form-section">
+                        <h3>Basic Information</h3>
+                        <div class="form-row">
+                            <label for="nonfiction-id">Node ID</label>
+                            <input type="text" id="nonfiction-id" placeholder="e.g., nf-what-is-ai">
+                        </div>
+                        <div class="form-row">
+                            <label for="nonfiction-title">Title</label>
+                            <input type="text" id="nonfiction-title" placeholder="Concept Title">
+                        </div>
+                        <div class="form-row">
+                            <label for="nonfiction-complexity">Complexity Level</label>
+                            <select id="nonfiction-complexity">
+                                <option value="basic">Basic</option>
+                                <option value="intermediate">Intermediate</option>
+                                <option value="advanced">Advanced</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h3>Content</h3>
+                        <div class="form-row">
+                            <label for="nonfiction-content">Educational Content</label>
+                            <textarea id="nonfiction-content" placeholder="The educational content..."></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h3>Metadata</h3>
+                        <div class="form-row">
+                            <label for="nonfiction-tags">Thematic Tags (comma separated)</label>
+                            <input type="text" id="nonfiction-tags" placeholder="e.g., ai-fundamentals, definitions">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="editor-form" id="character-form" style="display: none;">
+                    <div class="form-section">
+                        <h3>Basic Information</h3>
+                        <div class="form-row">
+                            <label for="character-id">Character ID</label>
+                            <input type="text" id="character-id" placeholder="e.g., alec">
+                        </div>
+                        <div class="form-row">
+                            <label for="character-name">Full Name</label>
+                            <input type="text" id="character-name" placeholder="Character's full name">
+                        </div>
+                        <div class="form-row">
+                            <label for="character-type">Character Type</label>
+                            <select id="character-type">
+                                <option value="primary">Primary</option>
+                                <option value="secondary">Secondary</option>
+                                <option value="incidental">Incidental</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h3>Details</h3>
+                        <div class="form-row">
+                            <label for="character-appearance">Appearance</label>
+                            <textarea id="character-appearance" placeholder="Physical description..."></textarea>
+                        </div>
+                        <div class="form-row">
+                            <label for="character-personality">Personality</label>
+                            <textarea id="character-personality" placeholder="Personality traits..."></textarea>
+                        </div>
+                        <div class="form-row">
+                            <label for="character-background">Background</label>
+                            <textarea id="character-background" placeholder="Character history and background..."></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h3>Voice & AI Generation</h3>
+                        <div class="form-row">
+                            <label for="character-speech">Speech Pattern</label>
+                            <textarea id="character-speech" placeholder="Distinctive speech patterns..."></textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="editor-form" id="interactive-form" style="display: none;">
+                    <div class="form-section">
+                        <h3>Basic Information</h3>
+                        <div class="form-row">
+                            <label for="interactive-id">Node ID</label>
+                            <input type="text" id="interactive-id" placeholder="e.g., interactive-neural-network-builder">
+                        </div>
+                        <div class="form-row">
+                            <label for="interactive-title">Title</label>
+                            <input type="text" id="interactive-title" placeholder="Interactive Element Title">
+                        </div>
+                        <div class="form-row">
+                            <label for="interactive-type">Component Type</label>
+                            <select id="interactive-type">
+                                <option value="simulation">Simulation</option>
+                                <option value="quiz">Quiz</option>
+                                <option value="visualization">Visualization</option>
+                                <option value="exercise">Exercise</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h3>Content</h3>
+                        <div class="form-row">
+                            <label for="interactive-description">Description</label>
+                            <textarea id="interactive-description" placeholder="Description of this interactive element..."></textarea>
+                        </div>
+                        <div class="form-row">
+                            <label for="interactive-instructions">Instructions</label>
+                            <textarea id="interactive-instructions" placeholder="Instructions for the user..."></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h3>Educational Objectives</h3>
+                        <div class="form-row">
+                            <label for="interactive-objectives">Learning Objectives (one per line)</label>
+                            <textarea id="interactive-objectives" placeholder="- Understand X&#10;- Experience Y&#10;- Learn Z"></textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="editor-form" id="world-form" style="display: none;">
+                    <div class="form-section">
+                        <h3>Basic Information</h3>
+                        <div class="form-row">
+                            <label for="world-id">Entity ID</label>
+                            <input type="text" id="world-id" placeholder="e.g., zachs-restaurant">
+                        </div>
+                        <div class="form-row">
+                            <label for="world-name">Name</label>
+                            <input type="text" id="world-name" placeholder="Entity Name">
+                        </div>
+                        <div class="form-row">
+                            <label for="world-type">Entity Type</label>
+                            <select id="world-type">
+                                <option value="location">Location</option>
+                                <option value="technology">Technology</option>
+                                <option value="organization">Organization</option>
+                                <option value="event">Event</option>
+                                <option value="concept">Concept</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h3>Description</h3>
+                        <div class="form-row">
+                            <label for="world-description">Description</label>
+                            <textarea id="world-description" placeholder="Detailed description of this entity..."></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h3>Details</h3>
+                        <div class="form-row">
+                            <label for="world-visual">Visual Attributes (one per line)</label>
+                            <textarea id="world-visual" placeholder="- Attribute 1&#10;- Attribute 2"></textarea>
+                        </div>
+                        <div class="form-row">
+                            <label for="world-historical">Historical Context</label>
+                            <textarea id="world-historical" placeholder="Historical background of this entity..."></textarea>
+                        </div>
+                        <div class="form-row">
+                            <label for="world-significance">Cultural Significance</label>
+                            <textarea id="world-significance" placeholder="Cultural impact and significance..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-button secondary" id="cancel-node-edit">Cancel</button>
+                <button class="modal-button primary" id="save-node-edit">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Context menu -->
+    <div class="context-menu" id="context-menu">
+        <div class="context-menu-item" id="context-edit">
+            <i class="fas fa-edit"></i> Edit
+        </div>
+        <div class="context-menu-item" id="context-connect">
+            <i class="fas fa-link"></i> Connect
+        </div>
+        <div class="context-menu-separator"></div>
+        <div class="context-menu-item" id="context-copy">
+            <i class="fas fa-copy"></i> Copy
+        </div>
+        <div class="context-menu-item" id="context-duplicate">
+            <i class="fas fa-clone"></i> Duplicate
+        </div>
+        <div class="context-menu-separator"></div>
+        <div class="context-menu-item" id="context-delete">
+            <i class="fas fa-trash"></i> Delete
+        </div>
+    </div>
+
+    <!-- Tooltip -->
+    <div class="tooltip" id="tooltip"></div>
+
+    <!-- Loading overlay -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="spinner"></div>
+        <div class="loading-text">Loading project...</div>
+    </div>
+
+    <script src="js/common.js"></script>
+    <script src="js/node-loader.js"></script>
+    <script src="js/node-editor.js"></script>
+</body>
+</html>
