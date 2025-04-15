@@ -2,14 +2,25 @@
   "nodeId": "ch2-scene2-nicole-work",
   "nodeType": "fiction",
   "data": {
-    "label": "The Fractured Forecast",
+    "label": "ch2-scene2-nicole-work",
     "chapterTitle": "Chapter 2: Digital Classroom",
     "subtitle": "Nicole's Day at Work",
     "location": "Nicole's Self-Driving Car and Office, Atlanta",
     "timeline": "2045, Morning after Parallax installation",
-    "tags": ["ai governance", "forecasting", "autonomous vehicles", "system anomalies", "trudy"],
+    "tags": [
+      "ai governance",
+      "forecasting",
+      "autonomous vehicles",
+      "system anomalies",
+      "trudy"
+    ],
     "povCharacter": "Nicole",
-    "availablePOVs": ["Nicole", "Bip", "Trudy", "Naomi"],
+    "availablePOVs": [
+      "Nicole",
+      "Bip",
+      "Trudy",
+      "Naomi"
+    ],
     "branchPoints": [
       {
         "text": "\"You received seventy-eight messages overnight,\" Bip reported.",
@@ -21,29 +32,14 @@
   "metadata": {
     "criticalPath": true,
     "author": "User",
-    "lastModified": "2025-03-23T12:00:00Z"
+    "lastModified": "2025-03-23T12:00:00Z",
+    "povCharacter": "Nicole"
   },
   "navigation": {
-    "next": "ch3-scene1-steve-morning-scene",
-    "previous": "nf-feedback-loops",
-    "alternateVersions": [
-      {
-        "povCharacter": "Bip",
-        "nodeId": "ch2-scene2-bip-pov"
-      },
-      {
-        "povCharacter": "Trudy",
-        "nodeId": "ch2-scene2-trudy-pov"
-      },
-      {
-        "povCharacter": "Naomi",
-        "nodeId": "ch2-scene2-naomi-pov"
-      }
-    ],
-    "relatedNonFiction": [
-      "nf-ai-governance",
-      "nf-feedback-loops",
-      "nf-democracy-evolution"
-    ]
+    "alternateVersions": [],
+    "relatedNonFiction": [],
+    "branchPoints": [],
+    "previous": "ch2-scene1-alec-at-school",
+    "next": "nf-feedback-loops"
   }
 }

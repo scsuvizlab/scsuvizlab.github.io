@@ -2,14 +2,24 @@
   "nodeId": "ch2-scene1-alec-at-school",
   "nodeType": "fiction",
   "data": {
-    "label": "AI Education",
+    "label": "ch2-scene1-alec-at-school",
     "chapterTitle": "Chapter 2: Digital Classroom",
     "subtitle": "Alec's School Day",
     "location": "Atlanta Education Center, 2045",
     "timeline": "2045, Morning after Parallax installation",
-    "tags": ["education", "ai tutoring", "personalization", "high school", "digital classroom"],
+    "tags": [
+      "education",
+      "ai tutoring",
+      "personalization",
+      "high school",
+      "digital classroom"
+    ],
     "povCharacter": "Alec",
-    "availablePOVs": ["Alec", "Lyra", "The Girl"],
+    "availablePOVs": [
+      "Alec",
+      "Lyra",
+      "The Girl"
+    ],
     "branchPoints": [
       {
         "text": "\"Yo, you catch the new Ex yet?\"",
@@ -21,25 +31,15 @@
   "metadata": {
     "criticalPath": true,
     "author": "User",
-    "lastModified": "2025-03-23T12:00:00Z"
+    "lastModified": "2025-03-23T12:00:00Z",
+    "povCharacter": "Alec",
+    "chapter": "chapter2"
   },
   "navigation": {
-    "next": "ch2-scene2-nicole-work",
+    "alternateVersions": [],
+    "relatedNonFiction": [],
+    "branchPoints": [],
     "previous": "nf-interactive-knowledge",
-    "alternateVersions": [
-      {
-        "povCharacter": "Lyra",
-        "nodeId": "ch2-scene1-lyra-pov"
-      },
-      {
-        "povCharacter": "The Girl",
-        "nodeId": "ch2-scene1-girl-pov"
-      }
-    ],
-    "relatedNonFiction": [
-      "nf-ai-in-education",
-      "nf-digital-natives",
-      "nf-interactive-knowledge"
-    ]
+    "next": "ch2-scene2-nicole-work"
   }
 }

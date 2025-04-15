@@ -1,0 +1,40 @@
+{
+  "nodeId": "ch1-scene3-opening-night",
+  "nodeType": "scene",
+  "data": {
+    "label": "Opening Night at Zach's Place",
+    "chapterTitle": "Chapter 1: A New Beginning",
+    "subtitle": "The Restaurant Opens to the Public",
+    "location": "Zach's Restaurant, Atlanta",
+    "timeline": "2045, Evening",
+    "tags": ["human craftsmanship", "AI society", "economic transition", "restaurant", "live music", "community"],
+    "povCharacter": "Omniscient",
+    "availablePOVs": ["Omniscient", "Zach", "Steve"],
+    "branchPoints": [],
+    "content": "<p>The night was alive at Zach's Place. The small restaurant, a cozy twelve-table haven with a bar and a tiny stage, was buzzing with steady conversation, laughter, and the warm, imperfect sounds of a live band playing a mix of old classic rock covers and a few fresh compositions. The walls, lined with real wood and decorated with eclectic art, were a point of confusion for some patrons who ran their fingers over the rough textures, expecting the smooth sterility of simulated surfaces. More than a few tapped on their tables, waiting for a holographic host to materialize, only to be met with a resolute 'thunk.'</p>\n\n<p>Three servers moved effortlessly between the tables, delivering vibrant, colorful dishes—a fusion of flavors from all over the world. The bartender worked steadily, pouring drinks, engaging in lively conversation. In the kitchen, three chefs worked in harmonious chaos, each dish plated with an artistry that no AI could replicate. And in the front of the house, Zach was being Zach—moving between tables, shaking hands, laughing, connecting. Everyone who worked here worked because they wanted to. Because they loved the energy, the connection, the sheer humanity of it all.</p>\n\n<p>Conversations swirled around him:</p>\n\n<p>\"This food is amazing. It's like… I don't know, messy, but in a good way.\" The plate in front of them was a vibrant explosion of color—roasted lamb shoulder drizzled with a smoky tamarind reduction, resting atop a bed of saffron-infused polenta. Beside it, pickled radish and ginger slaw added a pop of acidity, balancing the richness. A dollop of aioli blended with yuzu and black garlic completed the dish, the flavors layering unpredictably yet harmoniously with each bite.</p>\n\n<p>\"The band's great. You can hear the imperfections in their voices, you know? The little human bits.\" On stage, a trio played with a relaxed, effortless charm—a lead guitarist with a weathered Stratocaster, a bassist who occasionally stomped his foot in rhythm, and a drummer whose sticks spun theatrically between beats. They swung between a classic Rolling Stones cover and an original piece, a blues-infused number that crackled with raw energy, the lead singer's voice gravelly yet full of life.</p>\n\n<p>\"It's weird not having a holo-menu pop up, though. How do they keep track of orders?\" A server, a young woman with warm brown eyes and a disarming smile, stepped up with a sleek, old-style tablet in hand. \"That'd be me,\" she said cheerfully. \"Handwritten notes, human memory, and a little bit of faith. Crazy, right?\" She tapped the screen with practiced ease, taking down their order before flashing another grin and heading off toward the kitchen.</p>\n\n<p>People in 2045 lived through their avatars and agents, allowing AI to handle the minutiae of their daily lives. Their personal systems scheduled their meetings, answered their messages, curated their entertainment, and even conversed on their behalf when necessary. Life had become a seamless, frictionless experience where decisions were suggested before one even had to think about them.</p>\n\n<p>But the transition had not been easy. The last twenty years had been fraught with violence and upheaval as the world struggled to reconcile the old with the new. Many had clung to the ways they were raised, unwilling or unable to surrender their autonomy to AI management. When it was at its worst, the wealthy had hoarded their fortunes, amassing private forces in an attempt to secure their position against a world that no longer needed them to function. The working class, left adrift without purpose, rioted against an economy that had rendered their labor obsolete. In those days, a place like Zach's—where people could work, eat, and socialize without a digital filter—would have been unthinkable. Now, against all odds, it not only existed but could thrive.</p>\n\n<p>Zach stopped at a few tables, answering questions, soaking in the atmosphere. There was a warmth here that automation couldn't produce, a sense of presence that no AI-driven experience could recreate.</p>\n\n<p>Eventually, he found himself across from his father, Steve, who was taking slow, satisfied bites of a cheeseburger. Zach sat down, staring at the burger for a long moment. He looked like he was about to say something, but instead, he just smiled.</p>\n\n<p>Steve smirked, gesturing at the bustling restaurant. \"They're really workin' for free?\"</p>\n\n<p>Zach leaned back. \"They work for demand, Dad, and the fun of being around other people. I'll explain it later.\"</p>\n\n<p>As patrons finished their meals, Zach found himself explaining more than once that there was no AI in the place, no way to instantly connect to a neural hub or register satisfaction through an ambient feedback loop. \"All I have is an old-timey data port,\" he told them, pointing toward a small, dusty fixture near the door. \"Your devices should be able to plug in if you really want to leave a review.\"</p>\n\n<p>Few bothered. Some even seemed to appreciate the oddity of it.</p>\n\n<p>A patron furrowed their brow. \"But how are you ever gonna let people know about this place if you don't have an AI telling all the other AIs online that you exist?\"</p>\n\n<p>Zach leaned in slightly, tilting his head. \"How did you know about it?\"</p>\n\n<p>The patron blinked, then shrugged. \"Well, I heard about it from my brother...\"</p>\n\n<p>\"Exactly,\" Zach replied, smiling.</p>\n\n<p>Then, a diner at a nearby table took notice of Steve's burger. \"Hey, what's that?\"</p>\n\n<p>\"Cheeseburger,\" Steve replied simply, taking another bite.</p>\n\n<p>\"I'll have one of those.\"</p>\n\n<p>Word spread. By the end of the night, the cheeseburger was the top-selling item on the menu.</p>\n\n<p>And Zach, for all his work in balancing between the past and the future, just let it happen with a quiet, knowing smile.</p>"
+  },
+  "metadata": {
+    "criticalPath": true,
+    "author": "User",
+    "lastModified": "2025-03-28T12:00:00Z"
+  },
+  "navigation": {
+    "next": null,
+    "previous": null,
+    "alternateVersions": [
+      {
+        "povCharacter": "Zach",
+        "nodeId": "ch1-scene3-opening-night-zach-pov"
+      },
+      {
+        "povCharacter": "Steve",
+        "nodeId": "ch1-scene3-opening-night-steve-pov"
+      }
+    ],
+    "relatedNonFiction": [
+      "nf-economic-transformation",
+      "nf-human-craft-value",
+      "nf-post-scarcity-economy"
+    ]
+  }
+}

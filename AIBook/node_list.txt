@@ -1,0 +1,14 @@
+./content/critical_path/preface-main.json
+./content/nonfiction/nf-knowledge-evolution.json
+./content/fiction/ch1-scene1-restaurant.json
+./content/fiction/character_povs/ch1-scene1-alec-pov.json
+./content/fiction/character_povs/ch1-scene1-nicole-pov.json
+./content/fiction/character_povs/ch1-scene1-steve-pov.json
+./content/fiction/character_povs/ch1-scene1-zach-pov.json
+./content/fiction/ch1-scene2-alec-bedroom.json
+./content/nonfiction/nf-interactive-knowledge.json
+./content/fiction/ch2-scene1-alec-at-school.json
+./content/fiction/ch2-scene2-nicole-work.json
+./content/nonfiction/nf-feedback-loops.json
+./content/fiction/ch3-scene1-steve-morning-scene.json
+

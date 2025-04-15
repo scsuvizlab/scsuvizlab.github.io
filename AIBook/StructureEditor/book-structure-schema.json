@@ -1,0 +1,253 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Interactive Book Structure",
+  "description": "Schema for the book-structure.json file used by the Interactive Book Editor and Reader",
+  "type": "object",
+  "required": ["title", "defaultStartNode", "defaultPOV", "criticalPath", "chapters"],
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Title of the book"
+    },
+    "author": {
+      "type": "string",
+      "description": "Author of the book"
+    },
+    "version": {
+      "type": "string",
+      "description": "Version of the book structure"
+    },
+    "defaultStartNode": {
+      "type": "string",
+      "description": "ID of the default starting node for the book"
+    },
+    "defaultPOV": {
+      "type": "string",
+      "description": "Default point of view for nodes (typically 'Omniscient')"
+    },
+    "criticalPath": {
+      "type": "array",
+      "description": "Ordered array of nodes that form the critical/main path of the book",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "type", "filePath"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for the node"
+          },
+          "title": {
+            "type": "string",
+            "description": "Display title for the node"
+          },
+          "type": {
+            "type": "string",
+            "description": "Type of node (fiction, nonfiction, etc.)",
+            "enum": ["fiction", "nonfiction", "character", "interactive", "world"]
+          },
+          "chapter": {
+            "type": "string",
+            "description": "ID of the chapter this node belongs to"
+          },
+          "filePath": {
+            "type": "string",
+            "description": "Path to the node's content file relative to the content directory",
+            "pattern": "^[a-zA-Z0-9_-]+/[a-zA-Z0-9_.-]+\\.json$"
+          }
+        }
+      }
+    },
+    "chapters": {
+      "type": "array",
+      "description": "Array of chapters in the book",
+      "items": {
+        "type": "object",
+        "required": ["id", "title"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for the chapter"
+          },
+          "title": {
+            "type": "string",
+            "description": "Display title for the chapter"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of the chapter"
+          },
+          "startNode": {
+            "type": "string",
+            "description": "ID of the first node in this chapter"
+          },
+          "nodes": {
+            "type": "array",
+            "description": "Array of node IDs contained in this chapter",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "tracks": {
+      "type": "object",
+      "description": "Different reading tracks or paths through the book",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["name", "nodeSequence"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Display name for the track"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of the track"
+          },
+          "startNode": {
+            "type": "string",
+            "description": "ID of the first node in this track"
+          },
+          "nodeSequence": {
+            "type": "array",
+            "description": "Ordered array of node IDs in this track",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "characterPOVs": {
+      "type": "object",
+      "description": "Character point-of-view versions of nodes",
+      "additionalProperties": {
+        "type": "array",
+        "description": "Array of character POV versions for a base node",
+        "items": {
+          "type": "object",
+          "required": ["character", "nodeId", "filePath"],
+          "properties": {
+            "character": {
+              "type": "string",
+              "description": "Name of the character for this POV"
+            },
+            "nodeId": {
+              "type": "string",
+              "description": "ID of the character POV node"
+            },
+            "filePath": {
+              "type": "string",
+              "description": "Path to the character POV node's content file",
+              "pattern": "^fiction/character_povs/[a-zA-Z0-9_.-]+\\.json$"
+            }
+          }
+        }
+      }
+    },
+    "relatedContent": {
+      "type": "object",
+      "description": "Related content connections between nodes",
+      "additionalProperties": {
+        "type": "array",
+        "description": "Array of node IDs related to the key node",
+        "items": {
+          "type": "string"
+        }
+      }
+    },
+    "node_positions": {
+      "type": "object",
+      "description": "Visual positions of nodes in the editor graph view",
+      "additionalProperties": {
+        "type": "array",
+        "description": "X,Y coordinates of the node position",
+        "minItems": 2,
+        "maxItems": 2,
+        "items": {
+          "type": "number"
+        }
+      }
+    },
+    "characters": {
+      "type": "array",
+      "description": "Character definitions for the book",
+      "items": {
+        "type": "object",
+        "required": ["id", "name"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for the character"
+          },
+          "name": {
+            "type": "string",
+            "description": "Display name for the character"
+          },
+          "type": {
+            "type": "string",
+            "description": "Type of character (primary, secondary, etc.)"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of the character"
+          }
+        }
+      }
+    },
+    "nodes": {
+      "type": "array",
+      "description": "Additional node definitions (usually not needed as nodes are defined in content files)",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "type"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for the node"
+          },
+          "title": {
+            "type": "string",
+            "description": "Display title for the node"
+          },
+          "type": {
+            "type": "string",
+            "description": "Type of node"
+          },
+          "chapter": {
+            "type": "string",
+            "description": "Chapter this node belongs to"
+          },
+          "filePath": {
+            "type": "string",
+            "description": "Path to the node's content file"
+          }
+        }
+      }
+    },
+    "edges": {
+      "type": "array",
+      "description": "Edge connections between nodes",
+      "items": {
+        "type": "object",
+        "required": ["source", "target"],
+        "properties": {
+          "source": {
+            "type": "string",
+            "description": "ID of the source node"
+          },
+          "target": {
+            "type": "string",
+            "description": "ID of the target node"
+          },
+          "type": {
+            "type": "string", 
+            "description": "Type of the edge",
+            "enum": ["critical-path", "character-pov", "branch-point", "concept-sequence", "related-concept", "fiction-nonfiction", "default"]
+          }
+        }
+      }
+    }
+  }
+}

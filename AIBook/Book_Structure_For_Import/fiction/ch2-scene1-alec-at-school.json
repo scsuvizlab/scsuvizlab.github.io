@@ -1,0 +1,45 @@
+{
+  "nodeId": "ch2-scene1-alec-at-school",
+  "nodeType": "fiction",
+  "data": {
+    "label": "AI Education",
+    "chapterTitle": "Chapter 2: Digital Classroom",
+    "subtitle": "Alec's School Day",
+    "location": "Atlanta Education Center, 2045",
+    "timeline": "2045, Morning after Parallax installation",
+    "tags": ["education", "ai tutoring", "personalization", "high school", "digital classroom"],
+    "povCharacter": "Alec",
+    "availablePOVs": ["Alec", "Lyra", "The Girl"],
+    "branchPoints": [
+      {
+        "text": "\"Yo, you catch the new Ex yet?\"",
+        "targetNodeId": "ch2-sidequest1-omega-clash"
+      }
+    ],
+    "content": "<p>Alec rolled into school with the rest of the swarm, but as soon as they hit the threshold, the illusion of unity shattered. The AI-run system cracked the class apart like a crystal fracturing under pressure, sorting each student into a tailored lesson track. Some got slammed into high-octane logic drills, others got dropped into immersive history sims.</p>\n\n<p>His chair, a smart rig that adjusted to his spine's micro-movements, locked him into optimal posture. His desk flickered to life, blooming into an interactive interface.</p>\n\n<p>\"Morning, Alec,\" Lyra, his AI tutor, chimed in. \"Today's stack: geopolitical predictive modeling, personal ethics assessment, and—\"</p>\n\n<p>\"Spare me the menu read, Lyra. Just launch.\"</p>\n\n<p>The screen swirled, morphing into a fluid sim of the Kansas City food riots of 2032. Alec could tweak variables, tilt society just enough to see how it broke, then rewind and do it all over. No rote memorization, just raw cause-and-effect chaos.</p>\n\n<p>He flicked his gaze to his left. Gage was locked into a different track—some kind of Socratic brawl with AI-driven opponents. Across the aisle, Rhea was deep in a virtual dissection, her fingers swiping through a holographic cadaver, peeling back layers of skin and tissue like she was editing a video.</p>\n\n<p>\"Yo, Alec.\" A voice snapped him out of focus. Rowan, one of the few people who still insisted on analog socializing. \"You got the dystopia stack today?\"</p>\n\n<p>Alec smirked. \"Like we're not already deep in one.\"</p>\n\n<p>Rowan snorted but was yanked back into his own tailored curriculum. That was the thing—school was a thousand isolated experiences running in parallel. No shared suffering, no common drudgery. Just a hyper-optimized knowledge grind tailored to each kid's perceived strengths.</p>\n\n<p>Which is why he wasn't prepared when the entire system glitched out for a moment.</p>\n\n<p>\"Hey.\"</p>\n\n<p>Alec froze. The word came from outside the framework, from someone standing directly in his space. He turned his head too quickly, eyes locking onto something alien. A girl. Real flesh-and-blood, standing there like some ancient analog ghost, unscripted and unpredictable.</p>\n\n<p>She wasn't part of his thread. She wasn't algorithmically matched to his lesson. She was just… there.</p>\n\n<p>\"Alec, right?\" she asked.</p>\n\n<p>He opened his mouth, but his brain tripped over itself. He could finesse a social impact scenario until it spiraled into revolution, but a direct human interaction? No prompts, no pre-simulated branches? He had nothing.</p>\n\n<p>She tilted her head, waiting. His fingers twitched against his desk, searching for the reset button that wasn't there. The whole thing was rawfeed—unfiltered, uncurated, and way too real.</p>\n\n<p>\"Yeah,\" he finally managed, voice glitching somewhere between detached and confused.</p>\n\n<p>He could feel the simulation running around him, the quiet hum of optimized learning still droning along, but it didn't matter. For the first time in a long while, Alec was fully outside the system, untethered from the algorithm.</p>\n\n<p>And it was terrifying.</p>\n\n<hr>\n\n<h3>Break Time: Questions and Distractions</h3>\n\n<p>Alec leaned against the flex-table in the lounge, absentmindedly flicking his holo-screen closed. His brain was still circling the same loop: Why did the system keep throwing him back into the Kansas City food riots? Was he missing the point? Was the AI trying to nudge him somewhere he wasn't seeing?</p>\n\n<p>He turned to Seth, who was crunching on a nutri-stick and half-zoned into his own personal feed. \"Dude, do you ever get the same sim over and over?\"</p>\n\n<p>Seth barely glanced up. \"What, like a bug? Or like it's trying to fry something into your skull?\"</p>\n\n<p>Alec shrugged. \"Dunno. Keep getting dumped back in Kansas City '32. Feels like it's leading me somewhere.\"</p>\n\n<p>Seth snorted, tossing the wrapper of his nutri-stick onto the table. \"Maybe it knows you're the type of knob that will burn the city down?\"</p>\n\n<p>They both cracked up. Alec shook his head, but the thought lingered. Why was he always at the heart of the fire?</p>\n\n<p>Seth, already over it, leaned in with an eager look. \"Yo, you catch the new Ex yet?\"</p>\n\n<p>Ex. Short for 'experience,' the ultimate evolution of media.</p>\n\n<p>Ex wasn't just something you watched or played—it was whatever you wanted it to be. If you felt like kicking back with a movie, you could just stream the cinematic cut. If you wanted to get hands-on, you could take control of any character, play through their POV, tweak decisions, flip the genre if you wanted. Want it as a book? Print it. Anime? Stylize the whole thing in real-time. It was the endgame of entertainment—total narrative flexibility, tuned to the user's whim.</p>\n\n<p>\"Which one?\" Alec asked, though he wasn't sure why. He wasn't in the mood.</p>\n\n<p>\"The new Omega Clash. Whole new hero lineup. Zero lag, full immersion.\" Seth's eyes gleamed. \"They finally fixed the motion desync issue. Not only that but I got this mod that will let you see Miss Crystal's softshells!\"</p>\n\n<p>Alec nodded, and Seth kept talking about someone's softshells, but his thoughts kept drifting back. As Seth rambled on about the latest hyper-epic superhero Ex, Alec saw something else. Cities burning. Riot lines breaking. Crowds surging like a storm with no eye.</p>\n\n<p>The system was trying to tell him something. He just didn't know what.</p>"
+  },
+  "metadata": {
+    "criticalPath": true,
+    "author": "User",
+    "lastModified": "2025-03-23T12:00:00Z"
+  },
+  "navigation": {
+    "next": "ch2-scene2-nicole-work",
+    "previous": "nf-interactive-knowledge",
+    "alternateVersions": [
+      {
+        "povCharacter": "Lyra",
+        "nodeId": "ch2-scene1-lyra-pov"
+      },
+      {
+        "povCharacter": "The Girl",
+        "nodeId": "ch2-scene1-girl-pov"
+      }
+    ],
+    "relatedNonFiction": [
+      "nf-ai-in-education",
+      "nf-digital-natives",
+      "nf-interactive-knowledge"
+    ]
+  }
+}

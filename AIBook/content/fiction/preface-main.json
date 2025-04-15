@@ -1,0 +1,31 @@
+{
+  "nodeId": "preface-main",
+  "nodeType": "fiction",
+  "data": {
+    "label": "preface-main",
+    "chapterTitle": "Preface",
+    "subtitle": "Welcome to the Future",
+    "location": "Reader's Space",
+    "timeline": "Present Day",
+    "tags": [
+      "introduction",
+      "reader guidance",
+      "book concept",
+      "multi-modal story"
+    ],
+    "povCharacter": "Omniscient",
+    "content": "<div class=\"preface\">\n<h2>Welcome to Life in 2045</h2>\n\n<p>You're about to embark on a journey that's unlike traditional books. <em>Life in 2045</em> is an experiment in multi-modal storytelling that combines narrative fiction with educational non-fiction, allowing you to explore a near-future world from multiple perspectives while learning about the concepts that shape it.</p>\n\n<h3>About This Experience</h3>\n\n<p>This interactive book follows a family in the year 2045 as they navigate a world transformed by artificial intelligence. You'll meet Steve, a traditionalist restaurant owner; Nicole, an AI governance architect; their son Alec, a digital native with complex feelings about technology; and Zach, a grandfather who bridges past and present. Through their interconnected stories, you'll witness both the promise and challenges of a society where AI has become woven into everyday life.</p>\n\n<p>But this isn't just a story. Interspersed throughout the narrative are non-fiction nodes that explore the technological, social, and philosophical concepts underlying the fiction. These educational sections provide context and depth, helping you understand everything from AI architecture to the historical evolution of knowledge systems.</p>\n\n<h3>How to Read This Book</h3>\n\n<p>You can approach this book in several ways:</p>\n\n<ul>\n  <li><strong>Critical Path:</strong> Follow the main storyline from beginning to end, experiencing both fiction and non-fiction in a curated sequence.</li>\n  <li><strong>Fiction Track:</strong> Focus on the narrative elements, following the family's story chronologically.</li>\n  <li><strong>Non-Fiction Track:</strong> Explore the concepts and context, learning about the technology and social changes that define the world of 2045.</li>\n  <li><strong>Character-Based:</strong> Follow specific characters like Alec or Nicole, experiencing events from their perspective.</li>\n</ul>\n\n<p>At any point, you can switch between character perspectives, explore related concepts, or jump to connected nodes. The navigation sidebar will help you keep track of where you are and what's available to explore next.</p>\n\n<h3>Interactive Elements</h3>\n\n<p>Throughout your journey, you'll encounter:</p>\n\n<ul>\n  <li><strong>Branch Points:</strong> Moments where you can follow narrative branches to explore \"what-if\" scenarios</li>\n  <li><strong>Character Perspectives:</strong> Options to switch viewpoints and see events through different eyes</li>\n  <li><strong>Related Content:</strong> Links between fiction and non-fiction that deepen your understanding</li>\n  <li><strong>Reading Modes:</strong> Options to experience content through text, audio narration, or with generated images</li>\n</ul>\n\n<p>This is not a static book, but a living document that adapts to your interests and learning style. The more you explore, the richer your understanding of this complex future world will become.</p>\n\n<h3>A Note on AI Integration</h3>\n\n<p>It's fitting that a book about artificial intelligence should itself incorporate AI in its creation. Parts of this book were developed with AI assistance, and the interactive elements you'll experience use AI to adapt to your reading preferences. This collaboration between human creativity and machine capabilities mirrors the world depicted in the story—a world where the line between human and artificial intelligence grows increasingly blurred.</p>\n\n<p>As you read, consider how this hybrid creation process might influence the narrative. What perspectives might emerge from this human-AI collaboration that couldn't exist otherwise?</p>\n\n<h3>Begin Your Journey</h3>\n\n<p>The world of 2045 awaits. Turn the page to explore a society transformed by artificial intelligence—its hopes, challenges, fears, and possibilities. Whether you're here for the story or the ideas, for entertainment or education, there's something for you to discover.</p>\n\n<p>Welcome to the future. Welcome to Life in 2045.</p>\n</div>"
+  },
+  "metadata": {
+    "criticalPath": true,
+    "author": "System",
+    "lastModified": "2025-03-23T12:00:00Z",
+    "chapter": "chapter0"
+  },
+  "navigation": {
+    "alternateVersions": [],
+    "relatedNonFiction": [],
+    "next": "nf-knowledge-evolution",
+    "branchPoints": []
+  }
+}

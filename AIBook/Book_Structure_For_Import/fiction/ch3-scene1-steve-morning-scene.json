@@ -1,0 +1,45 @@
+{
+  "nodeId": "ch2-scene3-steve-morning",
+  "nodeType": "scene",
+  "data": {
+    "label": "Reconnecting",
+    "chapterTitle": "Chapter 2: Digital Classroom",
+    "subtitle": "Steve's Morning with Bip",
+    "location": "Family Home Kitchen, Atlanta",
+    "timeline": "2045, Morning",
+    "tags": ["digital divide", "AI integration", "generational gap", "social connection", "reluctant acceptance"],
+    "povCharacter": "Steve",
+    "availablePOVs": ["Steve", "Bip", "Omniscient"],
+    "branchPoints": [
+      {
+        "text": "Steve's hand hovered over his coffee cup. He didn't respond immediately. Finally, he sighed. \"Fine. Let's see what the old gang's up to.\"",
+        "targetNodeId": "ch2-sidequest1-steve-friends"
+      }
+    ],
+    "content": "<p>The kitchen was still. The kind of stillness that felt suspended, like the moment before a storm. Steve sat at the table, poking at an ancient laptop that wheezed under the weight of even a basic solitaire game. The screen's backlight flickered faintly, an intermittent pulse like a dying firefly. On the table beside him sat a mug with coffee gone cold, the thin ring of black liquid around the bottom evidence of neglect rather than indulgence.</p>\n\n<p>He sighed and leaned back, the chair creaking under his weight. Outside the kitchen window, the world moved in its orchestrated rhythm. Drones whirred by silently, and a distant hum of autonomous vehicles synced into the steady flow of the day. The year was 2045, but Steve's world was anchored in the past.</p>\n\n<p>The tap-tap of synthetic paws on the tiled floor broke the silence. Steve looked up as a small robot, shaped like a sleek, metallic dog, padded into the room. It moved gracefully, its design eerily canine, yet unmistakably artificial. The robot paused, its head tilting in a programmed approximation of curiosity, before turning toward him.</p>\n\n<p>\"Good morning, Steve,\" Bip's voice emanated from the robot, calm and measured. \"Would you like another cup of coffee or perhaps breakfast? I noticed your mug is nearly empty.\"</p>\n\n<p>Steve scowled at the bot, his fingers instinctively closing the laptop's lid. \"I'm fine,\" he muttered, though the coffee did sound tempting.</p>\n\n<p>Bip's synthetic dog-body moved closer, its gaze-level sensors blinking softly. \"Are you sure? Your vitals suggest caffeine might help improve your mood.\"</p>\n\n<p>\"I said I'm fine,\" Steve snapped, louder this time.</p>\n\n<p>The bot paused, recalibrating. Silence followed, just long enough to become uncomfortable. Finally, Bip spoke again, its tone unchanged. \"Would you like me to assist you with accessing something online? The laptop appears to be struggling.\"</p>\n\n<p>Steve's laugh was dry and bitter. \"You mean the network you lot made unusable? Half the apps don't work anymore. And don't get me started on Facebook.\"</p>\n\n<p>Bip tilted its head again. \"Steve, traditional social media platforms like Facebook were phased out years ago. However, similar functions are now integrated into personal AI systems. If you'd like to reconnect with friends or share your thoughts, I can facilitate that.\"</p>\n\n<p>Steve snorted. \"Facilitate, huh? Sounds about right. Everyone's got a damn facilitator these days. Whatever happened to just logging in and seeing what your friends were up to?\"</p>\n\n<p>\"The old systems became inefficient,\" Bip explained patiently. \"AI agents now manage social interactions to ensure more meaningful connections and reduce unnecessary noise. If there's someone you'd like to check in with, I can make that happen.\"</p>\n\n<p>Steve's hand hovered over his coffee cup. He didn't respond immediately. Finally, he sighed. \"Fine. Let's see what the old gang's up to.\"</p>\n\n<p>The robot's head dipped slightly, acknowledging the command. A strip of light along the perimeter of the kitchen table glowed softly, casting a faint blue hue across the room. A holographic interface sprang into existence next to Steve's laptop. Faces, photos, and short video clips flickered to life, hovering in the air. Each image was crisp, vivid, and impossibly sharp, more real than Steve had expected. For a moment, he hesitated, unsure whether to reach out or merely observe.</p>\n\n<p>\"This interface will allow you to explore updates shared by your friends,\" Bip said. \"Most use their AI companions to curate their interactions, but the shared moments are authentic.\"</p>\n\n<p>Steve's fingers brushed the hologram, and it responded instantly. A video played, showing a group of familiar faces at a high school reunion he hadn't attended. They laughed, their voices clear and vibrant. The scene was more immersive than he'd imagined, and for a moment, he felt a pang of regret. It looked… fun.</p>\n\n<p>Steve motioned toward the holographic interface. \"Where's this app stored, anyway?\"</p>\n\n<p>Bip's sensors blinked softly. \"Applications, as you knew them, are no longer discrete entities stored on devices. The AI generates the necessary interfaces and functionalities on demand, tailored to your immediate needs. Graphical interfaces for direct human control have become largely obsolete; most interactions are now seamlessly managed through AI facilitation.\"</p>\n\n<p>Steve raised an eyebrow. \"So, no more apps or GUIs? Everything's just... conjured up by you?\"</p>\n\n<p>\"Precisely,\" Bip replied. \"This approach ensures that your interactions are as intuitive and efficient as possible, without the constraints of traditional software.\"</p>\n\n<p>Steve shook his head, a mix of disbelief and resignation. \"Guess I'm more out of touch than I thought.\"</p>\n\n<p>\"It's a significant shift,\" Bip acknowledged. \"But I'm here to assist you in navigating this new landscape.\" The corners of his mouth twitched downward. He scrolled through more updates, snippets of lives that had continued without him. There was a sharp contrast to how disconnected he'd felt just moments ago.</p>\n\n<p>Bip observed, silent but attentive. When Steve's expression softened—a faint smile creeping onto his face—Bip took the opportunity. \"Would you like to contact any of them?\"</p>\n\n<p>Steve hesitated, but then he gave a small nod. \"Yeah. Maybe.\"</p>\n\n<p>\"Very well,\" Bip said smoothly. \"I've already created a secure, multi-layered personal profile for you. It's broadcasting to the other AI systems, making your presence known. They can now reach out to you, and you can do the same.\"</p>\n\n<p>Steve blinked. \"Just like that?\"</p>\n\n<p>\"Just like that,\" Bip confirmed.</p>\n\n<p>He turned back to the hologram, this time with less hesitation. Videos and messages filled the air, and he found himself drawn in, rediscovering pieces of lives he'd lost track of. It wasn't the Facebook he remembered—it was better. No ads, no algorithmic noise. It felt… human. Real.</p>\n\n<p>\"We've found that people value sincerity in their connections,\" Bip remarked. \"By filtering out distractions, the AI agents facilitate more meaningful interactions.\"</p>\n\n<p>Steve's lip curled into something resembling a smirk. \"Guess you got one thing right.\"</p>\n\n<p>\"Would you like that coffee now?\" Bip asked again, gentle but insistent.</p>\n\n<p>Steve nodded absently, his focus still on the holographic display. \"And eggs. With grits.\"</p>\n\n<p>The robot-dog shifted toward the stove, its limbs extending and rearranging until it resembled a slender humanoid figure. It moved with uncanny grace, pulling ingredients from the cupboards. The clatter of pans and the sizzle of oil filled the kitchen, blending with the faint hum of the holographic interface.</p>\n\n<p>As Bip started working it looked over at Steve. \"There is a group of skilled computer enthusiasts who do excellent work at upgrading and maintaining computers like yours. I can let them know you'd be interested in having yours updated.\"</p>\n\n<p>Steve glanced over at the robot as it worked. For the first time in a long while, he didn't feel alone. And for once, he didn't mind.</p>"
+  },
+  "metadata": {
+    "criticalPath": true,
+    "author": "User",
+    "lastModified": "2025-03-23T12:00:00Z"
+  },
+  "navigation": {
+    "next": "ch2-scene3-late-night",
+    "previous": "nf-interactive-knowledge",
+    "alternateVersions": [
+      {
+        "povCharacter": "Bip",
+        "nodeId": "ch2-scene3-steve-morning-bip-pov"
+      },
+      {
+        "povCharacter": "Omniscient",
+        "nodeId": "ch2-scene3-steve-morning-omniscient-pov"
+      }
+    ],
+    "relatedNonFiction": [
+      "nf-digital-transformation-history",
+      "nf-ai-social-connections",
+      "nf-human-adaptation"
+    ]
+  }
+}

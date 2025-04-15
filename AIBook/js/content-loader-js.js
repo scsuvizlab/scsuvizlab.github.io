@@ -37,7 +37,15 @@ class ContentLoader {
             this.updateAllComponents(node);
             
             // Add to history for back navigation
-            this.state.history.push({ nodeId, pov });
+            // Check if this node is already the last in history to avoid duplicates
+            const lastHistoryItem = this.state.history.length > 0 ? 
+                this.state.history[this.state.history.length - 1] : null;
+                
+            if (!lastHistoryItem || 
+                lastHistoryItem.nodeId !== nodeId || 
+                lastHistoryItem.pov !== pov) {
+                this.state.history.push({ nodeId, pov });
+            }
             
             // Return the loaded node
             return node;

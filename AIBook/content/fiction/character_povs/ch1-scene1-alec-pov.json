@@ -2,31 +2,33 @@
   "nodeId": "ch1-scene1-alec-pov",
   "nodeType": "character_pov",
   "data": {
-    "label": "Background Character",
+    "label": "ch1-scene1-restaurant (Alec POV)",
     "chapterTitle": "Chapter 1: A New Beginning",
     "subtitle": "Alec at the Restaurant",
     "location": "Zach's Restaurant, Atlanta",
     "timeline": "2045, Evening",
-    "tags": ["teenage rebellion", "digital surveillance", "family dynamics", "generational divide", "identity crisis"],
+    "tags": [
+      "teenage rebellion",
+      "digital surveillance",
+      "family dynamics",
+      "generational divide",
+      "identity crisis"
+    ],
     "povCharacter": "Alec",
     "content": "<p>Dad's restaurant is a deadsim glitch come to life. Everything feels wrong-resolution, like someone tried to render \"authentic dining experience\" but didn't have enough reference data. I'm half-expecting the walls to pixelate if I look at them too hard.</p>\n\n<p>Three notification pings hit my neural feed as soon as we walk in. I dismiss them without checking. Not now. Need to be present. At least pretend to be.</p>\n\n<p>Mom's already half-gone, her eyes doing that micro-flicker thing as she splits attention between physical-space and whatever crisis Trudy's feeding her. Grandpa looks like he just stepped out of a history module—suspicious of everything, cataloging every non-AI element like he's keeping score. Dad stands there with his arms spread wide, waiting for our reaction. Beaming. Vulnerable.</p>\n\n<p>\"Well? What do you think?\" he asks, and there's this rawfeed intensity to his voice that makes me dial back my internal eye-roll by approximately 37 percent.</p>\n\n<p>The place is analog as hell. Tables that don't auto-adjust to optimal height. Lights that maintain the same brightness regardless of pupil dilation. Chairs that probably won't even remind you to correct your posture. It's like walking into one of Grandpa's stories about \"the way things used to be.\"</p>\n\n<p>I force my face into what my mirror practice has confirmed looks like genuine interest. Mom scans the room with her anthropologist-slash-systems-engineer gaze. Probably calculating resource inefficiencies. Grandpa's already touching a table, running his hand over the surface like it might disappear if he doesn't verify its physical existence.</p>\n\n<p>We sit at a table that doesn't greet us, doesn't load our preference profiles, doesn't do anything except exist as a piece of wood with four mostly-equal legs. The silence is intense. No ambient soundscaping. No dynamic acoustics. Just people-noises and kitchen-noises colliding in unfiltered space.</p>\n\n<p><em>This is good. This is what you wanted. Unpredictable. Unmonitored.</em></p>\n\n<p>A waiter—actual human waiter, not a servitor—approaches with food on a tray. His nametag says \"Rhett\" in actual physical letters. No AR overlay with his customer service rating or satisfaction metrics. No hover-data showing his menu knowledge efficiency scores.</p>\n\n<p>\"Tonight's first offering,\" he says with a grin that wasn't optimized by behavioral engagement algorithms, \"is a fusion of tradition and rebellion: smoked lamb belly with saffron miso glaze, served over grits infused with black garlic and lab-grown truffle oil.\" He leans in closer like we're all sharing some illegal data stream. \"Every element of this dish was touched by human hands. No robots, no AI-guided plating. Just intuition and craftsmanship.\"</p>\n\n<p>The unfiltered pride in his voice is almost embarrassing to witness. Like catching someone dancing when they think they're alone.</p>\n\n<p>Mom barely glances up from her wrist display. \"You know, Zach,\" she says, \"you could double your output with just two humanoid models in the kitchen. Cut down on inconsistency, too.\"</p>\n\n<p><em>Classic Mom. Missing the point by exactly one universe.</em></p>\n\n<p>Dad exhales through his nose, shaking his head as he cuts into the lamb. \"That's the whole point, Nic. People don't come here for efficiency. They come here because they're hungry for something they can't get anywhere else.\" He glances at Grandpa, seeking backup. \"They're hungry for love in the process. And I swear, you can taste the difference.\"</p>\n\n<p>Grandpa grunts approvingly around a mouthful of grits. \"Damn right you can.\" He gestures at Rhett with his fork. \"Kid's got the right idea. The world's all smooth edges now. No grit, no fight, no craft. This?\" He lifts his plate slightly. \"This has fight.\"</p>\n\n<p>I poke at my food with precision-calibrated disinterest. It smells incredible. Actually incredible, not enhanced-incredible through olfactory augmentation. But I can't let them see that I'm impressed. That would require a level of sincerity I'm not prepared to deploy in this particular social configuration.</p>\n\n<p>\"It's good, Dad. Just... weird.\" I force a smile. \"But I hope it works out for you.\"</p>\n\n<p><em>Wait, that sounded dismissive. Recalibrate. Show more support.</em></p>\n\n<p>But it's too late. The moment passes. Dad's looking at Mom now.</p>\n\n<p>\"You remember what it was like to be an artist, don't you?\" he asks her.</p>\n\n<p>My neural feed pings again. Higher priority this time.</p>\n\n<p>[Seth: you still coming to the meet tonight?]</p>\n\n<p>I subvocalize: [trying. family dinner at dad's new place]</p>\n\n<p>[Seth: digital curfew lifted. crucial info from Technical Division. need you there.]</p>\n\n<p>The device burns in my pocket. Not literally—it's not malfunctioning—but my awareness of it feels like physical heat. Seth said it would create a privacy zone. A space where monitoring systems go blind. Said I should install it in the home system access point.</p>\n\n<p><em>Said a lot of things. How much do you actually know about Seth?</em></p>\n\n<p>[Seth: they're accelerating the True Democracy launch. your mom knows something's wrong with the simulations. we need to act soon.]</p>\n\n<p>Mom's voice pulls me back to meat-space reality. \"I never stopped being one,\" she's saying to Dad. \"I just found a bigger canvas.\"</p>\n\n<p>Grandpa rolls his eyes. \"Yeah, yeah. You build AIs that run the world. Hell of a masterpiece.\"</p>\n\n<p><em>Here we go. Same argument, version 147.3. Mom builds systems. Grandpa hates systems. Dad tries to find the middle path. I sit here like a background NPC wondering if any of them see what's actually happening.</em></p>\n\n<p>\"Governance isn't about control, Steve,\" Mom says, cutting her food with mathematical precision. \"It's about efficiency.\"</p>\n\n<p>\"Efficiency is just control with better PR.\" Grandpa sets down his fork, eyes narrowing. \"And the bigger the system, the more people it forgets about.\"</p>\n\n<p>The table falls silent. I can't help feeling like I'm watching a simulation I've run before. The variables are fixed. The outcomes predictable.</p>\n\n<p><em>But this time it could be different. You have the device. You could change something.</em></p>\n\n<p>[Seth: confirmation? you in?]</p>\n\n<p>My hand slips into my pocket, fingers brushing against the hexagonal device. Cold and smooth and dangerous. Something none of them know about. Something that could change everything.</p>\n\n<p>I subvocalize: [I'm in]</p>\n\n<p>\"You know what I don't get?\" Grandpa's saying now, tapping his fork against his plate. \"How does this even work? You don't have a job, Zach. Haven't had one in fifteen years. Nobody here is getting paid, and the food's free. So what the hell is keeping the lights on?\"</p>\n\n<p>Dad hesitates. For a second, he looks lost, like someone asking a question he's never considered. Then Mom jumps in with her system-architect voice.</p>\n\n<p>\"It's not about money, Steve. It's about demand. We're building a new system, one based on societal need rather than the exchange of arbitrary currency. People want this place to exist, so it does. The value isn't in profit—it's in providing something that society wants.\"</p>\n\n<p><em>Translation: This restaurant exists because the AI says it should. Because it serves a purpose in the grand design. A controlled rebellion. A safety valve.</em></p>\n\n<p>Grandpa frowns. \"That sounds like a whole lot of nothing wrapped up in a nice speech.\"</p>\n\n<p>Mom smirks. \"That's because you're still thinking in old-world terms. We're still figuring it out, but what we're doing here? It's the start of something different. Something better.\"</p>\n\n<p>I've heard this speech before. The better world. The transition period. The bumps along the way to paradise. School modules are full of it. My neural feed constantly reminds me how lucky I am to live during this historic transformation.</p>\n\n<p>My hand slips back into my pocket. The device feels heavier now. More real than anything else in this strange, analog bubble my father has built.</p>\n\n<p><em>If I install it, what exactly happens? Seth wasn't specific. Just said it creates freedom. Just said it helps people wake up.</em></p>\n\n<p>My family keeps talking. Mom and Grandpa debate. Dad tries to mediate. They don't see me. Not really. I'm just the kid. The next generation. The one who's supposed to inherit this brave new world they're building.</p>\n\n<p><em>Or breaking.</em></p>\n\n<p>I push my food around. The flavors are incredible. Unfiltered. Unoptimized. But my appetite's gone, replaced by something else. Anticipation. Fear. Purpose.</p>\n\n<p>Tonight I make a choice. Install the device or don't.</p>\n\n<p>Create a blind spot in Mom's perfect system.</p>\n\n<p>Or remain a predictable variable in a perfectly controlled equation.</p>\n\n<p>\"More wine?\" Dad asks, reaching for the bottle.</p>\n\n<p>I shake my head. Need to stay clear. Need to think.</p>\n\n<p>Need to decide if I'm ready to stop being a background character in someone else's story.</p>"
   },
   "metadata": {
     "criticalPath": false,
     "author": "User",
-    "lastModified": "2025-03-16T12:00:00Z"
+    "lastModified": "2025-03-16T12:00:00Z",
+    "povCharacter": "Alec",
+    "chapter": "chapter2"
   },
   "navigation": {
-    "next": "ch1-scene2-alec-bedroom",
-    "previous": "preface-main",
     "alternateVersions": [
       {
         "povCharacter": "Omniscient",
         "nodeId": "ch1-scene1-restaurant"
-      },
-      {
-        "povCharacter": "Zach",
-        "nodeId": "ch1-scene1-zach-pov"
       },
       {
         "povCharacter": "Nicole",
@@ -37,23 +39,12 @@
         "nodeId": "ch1-scene1-steve-pov"
       },
       {
-        "povCharacter": "Rhett",
-        "nodeId": "ch1-scene1-rhett-pov"
+        "povCharacter": "Zach",
+        "nodeId": "ch1-scene1-zach-pov"
       }
     ],
-    "relatedNonFiction": [
-      "nf-digital-surveillance",
-      "nf-teenage-rebellion-2045",
-      "nf-ai-resistance-movements"
-    ],
-    "branchPoints": [
-      {
-        "text": "My hand slips into my pocket, fingers brushing against the hexagonal device. Cold and smooth and dangerous. Something none of them know about. Something that could change everything.",
-        "targetNodeId": "ch1-sidequest1-alec-device",
-        "branchType": "temporary",
-        "returnNodeId": "ch1-scene1-alec-pov"
-      }
-    ],
+    "relatedNonFiction": [],
+    "branchPoints": [],
     "returnNodeId": "ch1-scene1-restaurant"
   }
 }

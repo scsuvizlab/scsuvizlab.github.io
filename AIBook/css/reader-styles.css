@@ -311,9 +311,30 @@ body {
     background-color: #2980b9;
 }
 
+.tooltip {
+    position: absolute;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    z-index: 1000;
+    pointer-events: none;
+    display: none;
+    white-space: nowrap;
+}
+
+/* Enhanced disabled button styling */
 .nav-button-large:disabled {
     background-color: #95a5a6;
     cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.nav-button-large.disabled {
+    background-color: #95a5a6;
+    cursor: not-allowed;
+    opacity: 0.7;
 }
 
 /* Right Sidebar for Context Info - REMOVED */

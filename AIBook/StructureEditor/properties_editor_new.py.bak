@@ -1,0 +1,124 @@
+"""
+PropertiesEditor class for the Interactive Book Editor.
+This class manages the specialized property editors.
+"""
+
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QStackedWidget, QLabel
+from PyQt5.QtCore import pyqtSignal
+
+from node_editor import NodeEditorPanel
+from edge_editor import EdgeEditorPanel
+
+class PropertiesEditor(QWidget):
+    """
+    Panel for viewing and editing properties of selected nodes and edges.
+    
+    Manages specialized editors for different types of items.
+    """
+    
+    # Signals
+    node_updated = pyqtSignal(object)  # Emitted when a node is updated
+    edge_updated = pyqtSignal(object)  # Emitted when an edge is updated
+    
+    def __init__(self, parent=None):
+        """Initialize a new PropertiesEditor instance."""
+        super().__init__(parent)
+        
+        self.current_node = None
+        self.current_edge = None
+        self.available_chapters = []
+        
+        self.init_ui()
+    
+    def init_ui(self):
+        """Initialize the UI components."""
+        # Main layout
+        layout = QVBoxLayout(self)
+        
+        # Create a stacked widget to switch between different editors
+        self.stacked_widget = QStackedWidget(self)
+        layout.addWidget(self.stacked_widget)
+        
+        # Create a default empty widget
+        self.empty_widget = QWidget(self)
+        empty_layout = QVBoxLayout(self.empty_widget)
+        empty_layout.addWidget(QLabel("No item selected"))
+        
+        # Create specialized editors
+        self.node_editor = NodeEditorPanel(self)
+        self.edge_editor = EdgeEditorPanel(self)
+        
+        # Add editors to the stacked widget
+        self.stacked_widget.addWidget(self.empty_widget)
+        self.stacked_widget.addWidget(self.node_editor)
+        self.stacked_widget.addWidget(self.edge_editor)
+        
+        # Show the empty widget by default
+        self.stacked_widget.setCurrentWidget(self.empty_widget)
+        
+        # Connect signals
+        self.node_editor.node_updated.connect(self.node_updated)
+        self.edge_editor.edge_updated.connect(self.edge_updated)
+    
+    def set_book_graph(self, book_graph):
+        """
+        Set the book graph for the node editor.
+        
+        Args:
+            book_graph: The book graph
+        """
+        self.node_editor.set_book_graph(book_graph)
+    
+    def set_available_chapters(self, chapters):
+        """
+        Set the available chapters for the chapter combo box.
+        
+        Args:
+            chapters (list): List of chapter dictionaries
+        """
+        self.available_chapters = chapters
+        self.node_editor.set_available_chapters(chapters)
+    
+    def display_node(self, node):
+        """
+        Display the properties of a node.
+        
+        Args:
+            node (Node): Node to display
+        """
+        self.current_node = node
+        self.current_edge = None
+        
+        # Update the node editor
+        self.node_editor.update_for_node(node)
+        
+        # Show the node editor
+        self.stacked_widget.setCurrentWidget(self.node_editor)
+    
+    def display_edge(self, edge):
+        """
+        Display the properties of an edge.
+        
+        Args:
+            edge (Edge): Edge to display
+        """
+        self.current_node = None
+        self.current_edge = edge
+        
+        # Update the edge editor
+        self.edge_editor.update_for_edge(edge)
+        
+        # Show the edge editor
+        self.stacked_widget.setCurrentWidget(self.edge_editor)
+    
+    def clear_display(self):
+        """Clear the display."""
+        self.current_node = None
+        self.current_edge = None
+        
+        # Clear the editors
+        self.node_editor.clear_panel()
+        self.edge_editor.clear_panel()
+        
+        # Show the empty widget
+        self.stacked_widget.setCurrentWidget(self.empty_widget)

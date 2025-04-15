@@ -2,14 +2,24 @@
   "nodeId": "ch1-scene2-alec-bedroom",
   "nodeType": "fiction",
   "data": {
-    "label": "The Device",
+    "label": "ch1-scene2-alec-bedroom",
     "chapterTitle": "Chapter 1: A New Beginning",
     "subtitle": "Alec's Bedroom",
     "location": "Alec's Room, Family Home, Atlanta",
     "timeline": "2045, Evening after dinner",
-    "tags": ["rebellion", "technology", "parallax", "ai security", "teenage life"],
+    "tags": [
+      "rebellion",
+      "technology",
+      "parallax",
+      "ai security",
+      "teenage life"
+    ],
     "povCharacter": "Alec",
-    "availablePOVs": ["Alec", "Bip", "Parallax"],
+    "availablePOVs": [
+      "Alec",
+      "Bip",
+      "Parallax"
+    ],
     "branchPoints": [
       {
         "text": "Parallax processed the name: Trudy.",
@@ -21,25 +31,15 @@
   "metadata": {
     "criticalPath": true,
     "author": "User",
-    "lastModified": "2025-03-23T12:00:00Z"
+    "lastModified": "2025-03-23T12:00:00Z",
+    "chapter": "chapter2",
+    "povCharacter": "omniscient"
   },
   "navigation": {
-    "next": "nf-interactive-knowledge",
+    "alternateVersions": [],
+    "relatedNonFiction": [],
     "previous": "ch1-scene1-restaurant",
-    "alternateVersions": [
-      {
-        "povCharacter": "Bip",
-        "nodeId": "ch1-scene2-bip-pov"
-      },
-      {
-        "povCharacter": "Parallax",
-        "nodeId": "ch1-scene2-parallax-pov"
-      }
-    ],
-    "relatedNonFiction": [
-      "nf-ai-security",
-      "nf-digital-natives",
-      "nf-ai-in-education"
-    ]
+    "next": "ch1-scene3-opening-night",
+    "branchPoints": []
   }
 }

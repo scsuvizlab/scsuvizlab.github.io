@@ -1,0 +1,252 @@
+{
+  "title": "Life in 2045",
+  "author": "Your Name",
+  "version": "1.0",
+  "defaultStartNode": "preface-main",
+  "defaultPOV": "Omniscient",
+  "chapters": [
+    {
+      "id": "preface",
+      "title": "Preface",
+      "description": "Introduction to the book",
+      "startNode": "preface-main",
+      "nodes": [
+        "preface-main"
+      ]
+    },
+    {
+      "id": "introduction",
+      "title": "Introduction: Knowledge Evolution",
+      "description": "Understanding the evolution of knowledge systems and AI's role",
+      "startNode": "nf-knowledge-evolution",
+      "nodes": [
+        "nf-knowledge-evolution"
+      ]
+    },
+    {
+      "id": "chapter1",
+      "title": "A New Beginning",
+      "description": "Introduces the family and their conflicting worldviews",
+      "startNode": "ch1-scene1-restaurant",
+      "nodes": [
+        "ch1-scene1-restaurant",
+        "ch1-scene2-alec-bedroom",
+        "Opening Night at Zach's Place"
+      ]
+    },
+    {
+      "id": "chapter2",
+      "title": "Digital Classroom",
+      "description": "Explores AI-driven education and human-AI co-creativity",
+      "startNode": "nf-interactive-knowledge",
+      "nodes": [
+        "nf-interactive-knowledge",
+        "ch2-scene1-alec-at-school",
+        "ch2-scene2-nicole-work"
+      ]
+    },
+    {
+      "id": "chapter3",
+      "title": "Feedback Systems",
+      "description": "Examining feedback systems and their impact on society",
+      "startNode": "nf-feedback-loops",
+      "nodes": [
+        "nf-feedback-loops",
+        "ch3-scene1-steve-morning-scene"
+      ]
+    }
+  ],
+  "characters": [
+    {
+      "id": "steve",
+      "name": "Steve",
+      "type": "primary",
+      "description": "Father, traditionalist restaurant owner"
+    },
+    {
+      "id": "nicole",
+      "name": "Nicole",
+      "type": "primary",
+      "description": "Mother, AI governance architect"
+    },
+    {
+      "id": "alec",
+      "name": "Alec",
+      "type": "primary",
+      "description": "Teenage son, digital native"
+    },
+    {
+      "id": "zach",
+      "name": "Zach",
+      "type": "primary",
+      "description": "Nicole's husband, restaurant owner"
+    }
+  ],
+  "tracks": {
+    "fiction": {
+      "name": "Narrative Track",
+      "description": "Follow the story of the family in chronological order",
+      "startNode": "ch1-scene1-restaurant",
+      "nodeSequence": [
+        "ch1-scene1-restaurant",
+        "ch1-scene2-alec-bedroom",
+        "Opening Night at Zach's Place",
+        "ch2-scene1-alec-at-school",
+        "ch2-scene2-nicole-work",
+        "ch3-scene1-steve-morning-scene"
+      ]
+    },
+    "nonfiction": {
+      "name": "Concepts & Context",
+      "description": "Explore the ideas and technology behind the story",
+      "startNode": "nf-knowledge-evolution",
+      "nodeSequence": [
+        "nf-knowledge-evolution",
+        "nf-interactive-knowledge",
+        "nf-feedback-loops"
+      ]
+    }
+  },
+  "criticalPath": [
+    {
+      "id": "preface-main",
+      "title": "Preface",
+      "type": "fiction",
+      "filePath": "critical_path/preface-main.json"
+    }
+  ],
+  "characterPOVs": {
+    "ch1-scene1-restaurant": [
+      {
+        "character": "Zach",
+        "nodeId": "ch1-scene1-zach-pov",
+        "filePath": "fiction/character_povs/ch1-scene1-zach-pov.json"
+      },
+      {
+        "character": "Nicole",
+        "nodeId": "ch1-scene1-nicole-pov",
+        "filePath": "fiction/character_povs/ch1-scene1-nicole-pov.json"
+      },
+      {
+        "character": "Steve",
+        "nodeId": "ch1-scene1-steve-pov",
+        "filePath": "fiction/character_povs/ch1-scene1-steve-pov.json"
+      },
+      {
+        "character": "Alec",
+        "nodeId": "ch1-scene1-alec-pov",
+        "filePath": "fiction/character_povs/ch1-scene1-alec-pov.json"
+      }
+    ],
+    "ch1-scene1-zach-pov": [
+      {
+        "character": "Nicole",
+        "nodeId": "ch1-scene1-nicole-pov",
+        "filePath": "fiction/character_povs/ch1-scene1-nicole-pov.json"
+      },
+      {
+        "character": "Steve",
+        "nodeId": "ch1-scene1-steve-pov",
+        "filePath": "fiction/character_povs/ch1-scene1-steve-pov.json"
+      },
+      {
+        "character": "Alec",
+        "nodeId": "ch1-scene1-alec-pov",
+        "filePath": "fiction/character_povs/ch1-scene1-alec-pov.json"
+      }
+    ],
+    "ch1-scene1-steve-pov": [
+      {
+        "character": "Omniscient",
+        "nodeId": "ch1-scene1-restaurant",
+        "filePath": "fiction/ch1-scene1-restaurant.json"
+      },
+      {
+        "character": "Zach",
+        "nodeId": "ch1-scene1-zach-pov",
+        "filePath": "fiction/character_povs/ch1-scene1-zach-pov.json"
+      },
+      {
+        "character": "Nicole",
+        "nodeId": "ch1-scene1-nicole-pov",
+        "filePath": "fiction/character_povs/ch1-scene1-nicole-pov.json"
+      },
+      {
+        "character": "Alec",
+        "nodeId": "ch1-scene1-alec-pov",
+        "filePath": "fiction/character_povs/ch1-scene1-alec-pov.json"
+      }
+    ],
+    "ch1-scene1-alec-pov": [
+      {
+        "character": "Omniscient",
+        "nodeId": "ch1-scene1-restaurant",
+        "filePath": "fiction/ch1-scene1-restaurant.json"
+      },
+      {
+        "character": "Zach",
+        "nodeId": "ch1-scene1-zach-pov",
+        "filePath": "fiction/character_povs/ch1-scene1-zach-pov.json"
+      },
+      {
+        "character": "Nicole",
+        "nodeId": "ch1-scene1-nicole-pov",
+        "filePath": "fiction/character_povs/ch1-scene1-nicole-pov.json"
+      },
+      {
+        "character": "Steve",
+        "nodeId": "ch1-scene1-steve-pov",
+        "filePath": "fiction/character_povs/ch1-scene1-steve-pov.json"
+      }
+    ],
+    "ch1-scene1-nicole-pov": [
+      {
+        "character": "Omniscient",
+        "nodeId": "ch1-scene1-restaurant",
+        "filePath": "fiction/ch1-scene1-restaurant.json"
+      },
+      {
+        "character": "Zach",
+        "nodeId": "ch1-scene1-zach-pov",
+        "filePath": "fiction/character_povs/ch1-scene1-zach-pov.json"
+      },
+      {
+        "character": "Steve",
+        "nodeId": "ch1-scene1-steve-pov",
+        "filePath": "fiction/character_povs/ch1-scene1-steve-pov.json"
+      },
+      {
+        "character": "Alec",
+        "nodeId": "ch1-scene1-alec-pov",
+        "filePath": "fiction/character_povs/ch1-scene1-alec-pov.json"
+      }
+    ]
+  },
+  "relatedContent": {},
+  "node_positions": {
+    "preface-main": [
+      331.2347294208307,
+      -234.48508430088742
+    ],
+    "ch1-scene1-restaurant": [
+      338.93758651923326,
+      -98.22118812922918
+    ],
+    "ch1-scene1-zach-pov": [
+      949.2396373833813,
+      -122.08520658525242
+    ],
+    "ch1-scene1-steve-pov": [
+      410.34523869791144,
+      66.3266940509082
+    ],
+    "ch1-scene1-alec-pov": [
+      832.9420333172402,
+      -91.74482461271742
+    ],
+    "ch1-scene1-nicole-pov": [
+      1105.3399172404665,
+      -96.5667009552999
+    ]
+  }
+}

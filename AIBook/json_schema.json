@@ -1,0 +1,207 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Node Content",
+  "description": "Schema for node content files in the Interactive Book Editor",
+  "type": "object",
+  "required": ["nodeId", "nodeType", "data"],
+  "properties": {
+    "nodeId": {
+      "type": "string",
+      "description": "Unique identifier for the node"
+    },
+    "nodeType": {
+      "type": "string",
+      "description": "Type of node",
+      "enum": ["fiction", "nonfiction", "character", "character_pov", "interactive", "world"]
+    },
+    "data": {
+      "type": "object",
+      "description": "Node content data",
+      "required": ["label"],
+      "properties": {
+        "label": {
+          "type": "string",
+          "description": "Display title for the node"
+        },
+        "chapterTitle": {
+          "type": "string",
+          "description": "Title of the chapter this node belongs to"
+        },
+        "subtitle": {
+          "type": "string",
+          "description": "Subtitle for the node"
+        },
+        "location": {
+          "type": "string",
+          "description": "Location where this scene takes place (for fiction nodes)"
+        },
+        "timeline": {
+          "type": "string",
+          "description": "Timeline information for this node"
+        },
+        "tags": {
+          "type": "array",
+          "description": "Thematic tags for this node",
+          "items": {
+            "type": "string"
+          }
+        },
+        "povCharacter": {
+          "type": "string",
+          "description": "POV character for fiction scenes"
+        },
+        "content": {
+          "type": "string",
+          "description": "HTML content of the node"
+        },
+        "complexity": {
+          "type": "string",
+          "description": "Complexity level (for nonfiction nodes)",
+          "enum": ["basic", "intermediate", "advanced"]
+        },
+        "name": {
+          "type": "string",
+          "description": "Name (for character or world entity nodes)"
+        },
+        "type": {
+          "type": "string",
+          "description": "Character type or world entity type"
+        },
+        "description": {
+          "type": "string",
+          "description": "Description text (for character or world entity nodes)"
+        },
+        "appearance": {
+          "type": "string",
+          "description": "Physical appearance (for character nodes)"
+        },
+        "personality": {
+          "type": "string",
+          "description": "Personality traits (for character nodes)"
+        },
+        "background": {
+          "type": "string",
+          "description": "Background information (for character or world entity nodes)"
+        },
+        "goals": {
+          "type": "string",
+          "description": "Character goals"
+        },
+        "relationships": {
+          "type": "array",
+          "description": "Character relationships",
+          "items": {
+            "type": "object",
+            "properties": {
+              "with": {
+                "type": "string",
+                "description": "Related character ID"
+              },
+              "type": {
+                "type": "string",
+                "description": "Relationship type"
+              },
+              "description": {
+                "type": "string",
+                "description": "Relationship description"
+              }
+            }
+          }
+        },
+        "attributes": {
+          "type": "array",
+          "description": "Attributes (for world entity nodes)",
+          "items": {
+            "type": "string"
+          }
+        },
+        "history": {
+          "type": "string",
+          "description": "Historical context (for world entity nodes)"
+        },
+        "significance": {
+          "type": "string",
+          "description": "Cultural or story significance"
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Node metadata",
+      "properties": {
+        "author": {
+          "type": "string",
+          "description": "Author of this node"
+        },
+        "lastModified": {
+          "type": "string",
+          "description": "Last modification timestamp",
+          "format": "date-time"
+        },
+        "criticalPath": {
+          "type": "boolean",
+          "description": "Whether this node is part of the critical path"
+        }
+      }
+    },
+    "navigation": {
+      "type": "object",
+      "description": "Navigation connections",
+      "properties": {
+        "next": {
+          "type": "string",
+          "description": "ID of the next node in sequence"
+        },
+        "previous": {
+          "type": "string",
+          "description": "ID of the previous node in sequence"
+        },
+        "alternateVersions": {
+          "type": "array",
+          "description": "Alternative POV versions of this node",
+          "items": {
+            "type": "object",
+            "properties": {
+              "povCharacter": {
+                "type": "string",
+                "description": "POV character"
+              },
+              "nodeId": {
+                "type": "string",
+                "description": "Node ID of the alternate version"
+              }
+            }
+          }
+        },
+        "relatedNonFiction": {
+          "type": "array",
+          "description": "Related non-fiction nodes",
+          "items": {
+            "type": "string"
+          }
+        },
+        "branchPoints": {
+          "type": "array",
+          "description": "Branch points in this node",
+          "items": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string",
+                "description": "Text that triggers the branch"
+              },
+              "targetNodeId": {
+                "type": "string",
+                "description": "Target node ID for this branch"
+              }
+            }
+          }
+        },
+        "returnNodeId": {
+          "type": "string",
+          "description": "Node ID to return to (for side quests or excursions)"
+        }
+      }
+    }
+  }
+}

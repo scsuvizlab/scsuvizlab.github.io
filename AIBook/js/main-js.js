@@ -7,6 +7,9 @@
  * Main application initialization
  */
 document.addEventListener('DOMContentLoaded', function() {
+
+    
+
     // Debug logging function
     function debug(msg, obj) {
         console.log(`DEBUG: ${msg}`, obj);
@@ -20,6 +23,8 @@ document.addEventListener('DOMContentLoaded', function() {
         history: [],
         isLoading: false
     };
+
+    
     
     debug("NodeLoader initialized:", state.nodeLoader);
     
